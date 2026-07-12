@@ -1,12 +1,29 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 let scene, camera, renderer;
-let mainMesh, wireframeMesh;
+let mainMesh, wireframeMesh, glowMesh;
 let particles;
 let mouseX = 0, mouseY = 0;
 let scrollY = 0;
 let time = 0;
 let totalRotation = 0;
+
+function createTexture() {
+  const c = document.createElement('canvas');
+  c.width = 128;
+  c.height = 128;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+  g.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c);
+  tex.needsUpdate = true;
+  return tex;
+}
 
 function init() {
   const canvas = document.getElementById('three-canvas');
@@ -23,52 +40,51 @@ function init() {
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  const ambient = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambient);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.2);
-  key.position.set(3, 4, 5);
+  const key = new THREE.DirectionalLight(0xffffff, 1.5);
+  key.position.set(4, 5, 6);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0x8ab4ff, 0.6);
-  fill.position.set(-3, 1, 2);
+  const fill = new THREE.DirectionalLight(0x8ab4ff, 0.8);
+  fill.position.set(-4, 2, 3);
   scene.add(fill);
 
-  const rim = new THREE.DirectionalLight(0xff8a8a, 0.4);
-  rim.position.set(0, -3, -4);
+  const rim = new THREE.DirectionalLight(0xff8a8a, 0.5);
+  rim.position.set(0, -4, -5);
   scene.add(rim);
 
-  const geo = new THREE.IcosahedronGeometry(1.3, 1);
+  const geo = new THREE.IcosahedronGeometry(1.35, 1);
 
   const mat = new THREE.MeshPhysicalMaterial({
     color: 0x6b8cff,
     metalness: 0.05,
     roughness: 0.1,
     transparent: true,
-    opacity: 0.3,
+    opacity: 0.55,
     side: THREE.DoubleSide,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.05,
-    envMapIntensity: 0.4,
+    clearcoat: 0.8,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 0.5,
   });
-
   mainMesh = new THREE.Mesh(geo, mat);
   scene.add(mainMesh);
 
   const wireMat = new THREE.MeshBasicMaterial({
-    color: 0x999999,
+    color: 0x445588,
     wireframe: true,
     transparent: true,
-    opacity: 0.15,
+    opacity: 0.35,
   });
   wireframeMesh = new THREE.Mesh(geo.clone(), wireMat);
-  wireframeMesh.scale.setScalar(1.02);
+  wireframeMesh.scale.setScalar(1.015);
   scene.add(wireframeMesh);
 
-  const pCount = 600;
+  const tex = createTexture();
+
+  const pCount = 500;
   const pPos = new Float32Array(pCount * 3);
   const pCol = new Float32Array(pCount * 3);
   const pSiz = new Float32Array(pCount);
@@ -84,7 +100,7 @@ function init() {
   for (let i = 0; i < pCount; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = 2.2 + Math.random() * 2.5;
+    const r = 2.5 + Math.random() * 2.8;
 
     pPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
     pPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
@@ -95,7 +111,7 @@ function init() {
     pCol[i * 3 + 1] = c[1];
     pCol[i * 3 + 2] = c[2];
 
-    pSiz[i] = 0.015 + Math.random() * 0.03;
+    pSiz[i] = 0.02 + Math.random() * 0.04;
   }
 
   const pGeom = new THREE.BufferGeometry();
@@ -104,10 +120,11 @@ function init() {
   pGeom.setAttribute('size', new THREE.BufferAttribute(pSiz, 1));
 
   const pMat = new THREE.PointsMaterial({
-    size: 0.04,
+    size: 0.05,
+    map: tex,
     vertexColors: true,
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.6,
     blending: THREE.NormalBlending,
     sizeAttenuation: true,
     depthWrite: false,
@@ -147,7 +164,6 @@ function animate() {
   const scrollPct = Math.min(scrollY / viewH, 1);
   const scrollUp = 1 - scrollPct;
 
-  // 往上滑 = Y轴旋转，滚多少转多少
   totalRotation = scrollUp * Math.PI * 4;
 
   if (mainMesh) {
@@ -168,11 +184,10 @@ function animate() {
   }
 
   if (particles) {
-    particles.rotation.y = time * 0.04;
+    particles.rotation.y = time * 0.04 + mouseX * 0.05;
     particles.rotation.x = mouseY * 0.05 + Math.sin(time * 0.3) * 0.02;
   }
 
-  // 视差
   const px = mouseX * 0.3;
   const py = mouseY * 0.2;
   camera.position.x += (px - camera.position.x) * 0.025;
