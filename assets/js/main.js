@@ -58,9 +58,9 @@ function initNavScroll() {
   window.addEventListener('scroll', () => {
     const currentScroll = window.scrollY;
     if (currentScroll > lastScroll && currentScroll > 100) {
-      nav.style.transform = 'translateY(-100%)';
+      nav.style.top = '-80px';
     } else {
-      nav.style.transform = 'translateY(0)';
+      nav.style.top = '16px';
     }
     lastScroll = currentScroll;
   }, { passive: true });

@@ -120,15 +120,16 @@ img {
 .nav {
   position: fixed;
   top: 16px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
   padding: 10px 28px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 24px;
-  max-width: 600px;
+  width: fit-content;
+  max-width: calc(100% - 48px);
   border-radius: 999px;
   background: rgba(255,255,255,0.45);
   backdrop-filter: blur(40px) saturate(200%);
@@ -139,6 +140,13 @@ img {
     0 1px 3px rgba(0,0,0,0.04),
     inset 0 1px 0 rgba(255,255,255,0.8),
     inset 0 -1px 0 rgba(255,255,255,0.3);
+  transition: top 0.4s cubic-bezier(0.25,0.1,0.25,1);
+}
+.nav-logo {
+  margin-right: auto;
+}
+.nav-hamburger {
+  margin-left: auto;
 }
 .nav::before {
   content: '';
