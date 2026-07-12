@@ -157,6 +157,12 @@ img {
   letter-spacing: -0.3px;
 }
 
+.nav-logo img {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
 .nav-links {
   display: flex;
   align-items: center;

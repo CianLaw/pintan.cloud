@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 40" fill="none">
+  <rect x="2" y="4" width="24" height="32" rx="3" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+  <path d="M8 4 V36" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="14" y="28" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="#1a1a1a" text-anchor="middle">0</text>
+  <text x="38" y="27" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="600" fill="#1a1a1a" letter-spacing="-0.5">PageZero</text>
+</svg>
