@@ -69,6 +69,8 @@ img {
 .section {
   padding: 120px 0;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .section-label {
@@ -552,9 +554,10 @@ img {
 }
 
 .footer {
-  padding: 80px 40px;
+  padding: 80px 0 40px;
   border-top: 1px solid var(--border);
-  background: var(--bg-alt);
+  position: relative;
+  z-index: 1;
 }
 
 .footer-grid {
@@ -616,6 +619,8 @@ img {
 
 .page-header {
   padding: 160px 40px 80px;
+  position: relative;
+  z-index: 1;
 }
 
 .page-header .container {
