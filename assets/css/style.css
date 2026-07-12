@@ -689,7 +689,33 @@ img {
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 40px;
+}
+
+.contact-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-block-title {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.contact-link {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.contact-link:hover {
+  color: var(--accent);
 }
 
 .contact-info-item {
@@ -715,7 +741,7 @@ img {
   margin-bottom: 24px;
 }
 
-.form-label {
+.form-group label {
   display: block;
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -724,8 +750,8 @@ img {
   margin-bottom: 8px;
 }
 
-.form-input,
-.form-textarea {
+.form-group input,
+.form-group textarea {
   width: 100%;
   padding: 16px 0;
   background: none;
@@ -736,6 +762,16 @@ img {
   font-size: 15px;
   outline: none;
   transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
 }
 .form-input:focus,
 .form-textarea:focus {

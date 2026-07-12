@@ -1,102 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Building a 3D Particle System — PageZero</title>
-<meta name="description" content="A deep dive into creating a 3D particle system using Three.js and simplex noise.">
+<title>从零开始搭建个人博客 — 第零页</title>
+<meta name="description" content="记录我从零搭建个人博客的完整过程，包括技术选型、设计思路和踩过的坑。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>P</text></svg>">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
 <nav class="nav">
-  <a href="/" class="nav-logo"><img src="assets/img/logo.svg" alt="PageZero" height="32"></a>
+  <a href="/" class="nav-logo"><img src="assets/img/logo.svg" alt="第零页" height="32"></a>
   <ul class="nav-links" id="navLinks">
-    <li><a href="/">Home</a></li>
-    <li><a href="/about.html">About</a></li>
-    <li><a href="/blog.html" class="active">Blog</a></li>
-    <li><a href="/contact.html">Contact</a></li>
+    <li><a href="/">首页</a></li>
+    <li><a href="/about.html">关于</a></li>
+    <li><a href="/blog.html" class="active">日志</a></li>
+    <li><a href="/contact.html">联系</a></li>
   </ul>
-  <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+  <button class="nav-hamburger" id="navToggle" aria-label="菜单">
     <span></span><span></span><span></span>
   </button>
 </nav>
 
-<section class="page-header">
+<article class="page-header">
   <div class="container">
-    <p class="section-label reveal">Development / Jul 2026</p>
-    <h1 class="page-title reveal">Building a 3D Particle System from Scratch</h1>
-    <p class="page-sub reveal" style="transition-delay:0.1s">A technical deep dive into creating a performant particle system using Three.js, simplex noise, and GPU-friendly techniques.</p>
-  </div>
-</section>
-
-<article class="blog-single">
-  <div class="blog-meta reveal">
-    <span>By PageZero</span>
-    <span>—</span>
-    <span>12 min read</span>
-  </div>
-
-  <div class="blog-single-content reveal" style="transition-delay:0.1s">
-    <p>Particle systems are one of those things that look magical but are surprisingly straightforward once you understand the core concepts. In this post, I'll walk through how I built the 3D particle universe for my Cosmic Sandbox project.</p>
-
-    <h2>The Foundation: BufferGeometry</h2>
-    <p>Three.js provides BufferGeometry as the backbone for rendering large numbers of vertices efficiently. Unlike traditional geometry, BufferGeometry stores data in typed arrays that can be sent directly to the GPU with minimal overhead.</p>
-    <p>For a particle system, we need at minimum a position attribute (3 floats per particle: x, y, z) and optionally a color attribute. With 30,000 particles, that's 90,000 floats for positions alone — a trivially small amount for modern GPUs.</p>
-
-    <h2>Simplex Noise for Organic Movement</h2>
-    <p>To make the particles move organically, I implemented 3D simplex noise. Unlike Perlin noise, simplex noise has a lower computational complexity and produces fewer directional artifacts, making it ideal for fluid-looking animations.</p>
-    <p>The key insight is to use time as the fourth dimension input to the noise function. This creates continuously evolving movement patterns that never repeat exactly.</p>
-
-    <blockquote>Simplex noise gives us natural-looking motion without the overhead of physics simulations. It's the perfect tool for creating living, breathing particle systems.</blockquote>
-
-    <h2>Performance Considerations</h2>
-    <p>With 30,000 particles, every optimization matters. Here are the key strategies I used:</p>
-    <p>First, avoid allocations in the render loop. All temporary vectors and colors are pre-allocated once and reused every frame. This prevents garbage collection pauses that would destroy the smoothness of the animation.</p>
-    <p>Second, use AdditiveBlending for particles. This not only looks better (bright particles glow against dark backgrounds), but also reduces overdraw issues since particles don't obscure each other.</p>
-    <p>Third, compute target positions in a separate buffer and interpolate. This decouples the logical simulation from the visual state, allowing for smooth transitions between different modes.</p>
-
-    <h2>Putting It All Together</h2>
-    <p>The final system supports multiple modes: a cosmic solar system with orbiting planets, preset celestial patterns, custom image-based 3D reliefs, and built-in geometric shapes. Each mode simply writes to the same target buffer, and the animation loop handles the interpolation.</p>
-    <p>The result is a flexible, performant particle engine that can power everything from interactive art to data visualization.</p>
+    <p class="section-label reveal">技术 / 2026年7月</p>
+    <h1 class="page-title reveal">从零开始<br>搭建个人博客</h1>
+    <p class="page-sub reveal" style="transition-delay:0.1s">记录我从零搭建个人博客的完整过程，包括技术选型、设计思路和踩过的坑。</p>
   </div>
 </article>
+
+<section class="section">
+  <div class="container" style="max-width:720px">
+    <div class="about-desc reveal">
+      <p style="margin-bottom:20px">一直想拥有一个属于自己的网站，一个完全由自己掌控的空间。今年暑假终于动手了。这篇文章记录了整个过程，从想法到上线。</p>
+      <h2 style="font-size:24px;margin:40px 0 20px;font-family:var(--font-display)">为什么要做个人博客？</h2>
+      <p style="margin-bottom:20px">社交媒体虽然方便，但总感觉不是自己的地盘。算法决定别人能不能看到你的内容，平台随时可能改变规则。我想要一个完全由我掌控的地方，想写什么就写什么，想放什么就放什么。</p>
+      <p style="margin-bottom:20px">而且，做博客本身就是一个很好的学习过程。前端、后端、部署、域名……每一个环节都能学到东西。</p>
+      <h2 style="font-size:24px;margin:40px 0 20px;font-family:var(--font-display)">技术选型</h2>
+      <p style="margin-bottom:20px">我选择了纯静态网站方案。没有后端，没有数据库，所有页面都是 HTML + CSS + JS。好处是部署简单、速度快、安全性高。</p>
+      <p style="margin-bottom:20px">三.js 做了首页的粒子特效，给整个网站增加一点动态感。GitHub Pages 做免费托管，阿里云买了域名。</p>
+      <h2 style="font-size:24px;margin:40px 0 20px;font-family:var(--font-display)">设计思路</h2>
+      <p style="margin-bottom:20px">整体走温暖简约风。背景用奶白色，强调色用大地色系。导航栏做了毛玻璃效果，滚动时有显示/隐藏动画。首页的粒子会随滚动展开，增加视觉层次。</p>
+      <h2 style="font-size:24px;margin:40px 0 20px;font-family:var(--font-display)">踩过的坑</h2>
+      <p style="margin-bottom:20px">最大的坑是 Three.js 的混合模式。一开始用加法混合（AdditiveBlending），在白色背景上粒子全白看不见。后来改成正常混合（NormalBlending）才搞定。</p>
+      <p>做个人网站最大的收获不只是技术，而是「这是我的地方」的归属感。强烈推荐每个学编程的人都做一个。</p>
+    </div>
+  </div>
+</section>
 
 <footer class="footer">
   <div class="footer-grid">
     <div>
-      <div class="footer-brand">PageZero</div>
+      <div class="footer-brand">第零页</div>
       <p class="footer-desc">17岁水瓶座男生的个人空间。拍照、听书、运动、编程——在多元爱好里丰富自我。</p>
     </div>
     <div>
-      <p class="footer-col-title">Pages</p>
+      <p class="footer-col-title">页面</p>
       <ul class="footer-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/blog.html">Blog</a></li>
-        <li><a href="/contact.html">Contact</a></li>
+        <li><a href="/">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/blog.html">日志</a></li>
+        <li><a href="/contact.html">联系</a></li>
       </ul>
     </div>
     <div>
-      <p class="footer-col-title">Social</p>
+      <p class="footer-col-title">社交</p>
       <ul class="footer-links">
-        <li><a href="#" target="_blank">GitHub</a></li>
-        <li><a href="#" target="_blank">Twitter</a></li>
-        <li><a href="#" target="_blank">Dribbble</a></li>
+        <li><a href="https://github.com/CianLaw" target="_blank">GitHub</a></li>
       </ul>
     </div>
     <div>
-      <p class="footer-col-title">Contact</p>
+      <p class="footer-col-title">联系</p>
       <ul class="footer-links">
         <li><a href="mailto:hello@pintan.cloud">hello@pintan.cloud</a></li>
-        <li><a href="/contact.html">Send a Message</a></li>
+        <li><a href="/contact.html">发送消息</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; 2026 PageZero. All rights reserved.</span>
-    <span>Designed with purpose</span>
+    <span>&copy; 2026 第零页 PageZero. 保留所有权利.</span>
+    <span>用心设计</span>
   </div>
 </footer>
 

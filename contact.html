@@ -1,33 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Contact — PageZero</title>
-<meta name="description" content="Get in touch with PageZero.">
+<title>联系 — 第零页</title>
+<meta name="description" content="PageZero 第零页 — 联系我。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>P</text></svg>">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
 <nav class="nav">
-  <a href="/" class="nav-logo"><img src="assets/img/logo.svg" alt="PageZero" height="32"></a>
+  <a href="/" class="nav-logo"><img src="assets/img/logo.svg" alt="第零页" height="32"></a>
   <ul class="nav-links" id="navLinks">
-    <li><a href="/">Home</a></li>
-    <li><a href="/about.html">About</a></li>
-    <li><a href="/blog.html">Blog</a></li>
-    <li><a href="/contact.html" class="active">Contact</a></li>
+    <li><a href="/">首页</a></li>
+    <li><a href="/about.html">关于</a></li>
+    <li><a href="/blog.html">日志</a></li>
+    <li><a href="/contact.html" class="active">联系</a></li>
   </ul>
-  <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+  <button class="nav-hamburger" id="navToggle" aria-label="菜单">
     <span></span><span></span><span></span>
   </button>
 </nav>
 
 <section class="page-header">
   <div class="container">
-    <p class="section-label reveal">Contact</p>
-    <h1 class="page-title reveal">Let's work<br>together</h1>
-    <p class="page-sub reveal" style="transition-delay:0.1s">Have a project in mind or just want to say hello? I'd love to hear from you. Drop me a message and I'll get back to you as soon as possible.</p>
+    <p class="section-label reveal">联系</p>
+    <h1 class="page-title reveal">有话想说？<br>随时联系我</h1>
+    <p class="page-sub reveal" style="transition-delay:0.1s">无论是合作、交流还是单纯想聊聊，都欢迎联系我。</p>
   </div>
 </section>
 
@@ -35,37 +35,29 @@
   <div class="container">
     <div class="contact-grid">
       <div class="contact-info reveal">
-        <div class="contact-info-item">
-          <span class="contact-info-label">Email</span>
-          <span class="contact-info-value">hello@pintan.cloud</span>
+        <div class="contact-block">
+          <h3 class="contact-block-title">邮箱</h3>
+          <a href="mailto:hello@pintan.cloud" class="contact-link">hello@pintan.cloud</a>
         </div>
-        <div class="contact-info-item">
-          <span class="contact-info-label">Location</span>
-          <span class="contact-info-value">Earth</span>
-        </div>
-        <div class="contact-info-item">
-          <span class="contact-info-label">Availability</span>
-          <span class="contact-info-value">Open for projects</span>
-        </div>
-        <div class="contact-info-item">
-          <span class="contact-info-label">Response Time</span>
-          <span class="contact-info-value">Usually within 24 hours</span>
+        <div class="contact-block">
+          <h3 class="contact-block-title">GitHub</h3>
+          <a href="https://github.com/CianLaw" target="_blank" class="contact-link">CianLaw</a>
         </div>
       </div>
-      <form class="reveal" style="transition-delay:0.1s" onsubmit="event.preventDefault();alert('Message sent! (Demo)')">
+      <form class="contact-form reveal" style="transition-delay:0.1s">
         <div class="form-group">
-          <label class="form-label" for="name">Name</label>
-          <input class="form-input" id="name" type="text" placeholder="Your name" required>
+          <label for="name">你的名字</label>
+          <input type="text" id="name" name="name" placeholder="请输入你的名字" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="email">Email</label>
-          <input class="form-input" id="email" type="email" placeholder="your@email.com" required>
+          <label for="email">邮箱地址</label>
+          <input type="email" id="email" name="email" placeholder="请输入邮箱地址" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="message">Message</label>
-          <textarea class="form-textarea" id="message" placeholder="Tell me about your project..." required></textarea>
+          <label for="message">想说的话</label>
+          <textarea id="message" name="message" rows="5" placeholder="请输入你想说的内容..." required></textarea>
         </div>
-        <button type="submit" class="form-submit">Send Message →</button>
+        <button type="submit" class="btn">发送消息 <span class="arrow"></span></button>
       </form>
     </div>
   </div>
@@ -74,37 +66,35 @@
 <footer class="footer">
   <div class="footer-grid">
     <div>
-      <div class="footer-brand">PageZero</div>
+      <div class="footer-brand">第零页</div>
       <p class="footer-desc">17岁水瓶座男生的个人空间。拍照、听书、运动、编程——在多元爱好里丰富自我。</p>
     </div>
     <div>
-      <p class="footer-col-title">Pages</p>
+      <p class="footer-col-title">页面</p>
       <ul class="footer-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/blog.html">Blog</a></li>
-        <li><a href="/contact.html">Contact</a></li>
+        <li><a href="/">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/blog.html">日志</a></li>
+        <li><a href="/contact.html">联系</a></li>
       </ul>
     </div>
     <div>
-      <p class="footer-col-title">Social</p>
+      <p class="footer-col-title">社交</p>
       <ul class="footer-links">
-        <li><a href="#" target="_blank">GitHub</a></li>
-        <li><a href="#" target="_blank">Twitter</a></li>
-        <li><a href="#" target="_blank">Dribbble</a></li>
+        <li><a href="https://github.com/CianLaw" target="_blank">GitHub</a></li>
       </ul>
     </div>
     <div>
-      <p class="footer-col-title">Contact</p>
+      <p class="footer-col-title">联系</p>
       <ul class="footer-links">
         <li><a href="mailto:hello@pintan.cloud">hello@pintan.cloud</a></li>
-        <li><a href="/contact.html">Send a Message</a></li>
+        <li><a href="/contact.html">发送消息</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; 2026 PageZero. All rights reserved.</span>
-    <span>Designed with purpose</span>
+    <span>&copy; 2026 第零页 PageZero. 保留所有权利.</span>
+    <span>用心设计</span>
   </div>
 </footer>
 
