@@ -1,141 +1,100 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 let scene, camera, renderer;
-let mainMesh, wireframeMesh;
-let particles;
+let orbitGroup;
+let shapes = [];
 let mouseX = 0, mouseY = 0;
 let scrollY = 0;
 let time = 0;
-let totalRotation = 0;
 
-function createTexture() {
-  const c = document.createElement('canvas');
-  c.width = 128;
-  c.height = 128;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-  g.addColorStop(0.5, 'rgba(255,255,255,0.2)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 128, 128);
-  const tex = new THREE.CanvasTexture(c);
-  tex.needsUpdate = true;
-  return tex;
-}
+const SHAPE_COUNT = 24;
 
 function init() {
   const canvas = document.getElementById('three-canvas');
   if (!canvas) return;
 
   scene = new THREE.Scene();
+  const w = window.innerWidth, h = window.innerHeight;
 
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-
-  camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
-  camera.position.set(0, 0, 5.5);
+  camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+  camera.position.set(0, 0, 7);
 
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.5);
-  scene.add(ambient);
+  orbitGroup = new THREE.Group();
+  scene.add(orbitGroup);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.8);
-  key.position.set(4, 5, 6);
-  scene.add(key);
-
-  const fill = new THREE.DirectionalLight(0x8866ff, 1.0);
-  fill.position.set(-4, 2, 3);
-  scene.add(fill);
-
-  const rim = new THREE.DirectionalLight(0xff4488, 0.8);
-  rim.position.set(0, -4, -5);
-  scene.add(rim);
-
-  const top = new THREE.DirectionalLight(0x66ccff, 0.5);
-  top.position.set(0, 6, 0);
-  scene.add(top);
-
-  const geo = new THREE.TorusKnotGeometry(1.1, 0.4, 128, 32, 2, 3);
-
-  const mat = new THREE.MeshPhysicalMaterial({
-    color: 0x6b4cff,
-    metalness: 0.3,
-    roughness: 0.15,
-    transparent: true,
-    opacity: 0.5,
-    side: THREE.DoubleSide,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.05,
-    envMapIntensity: 0.6,
-  });
-  mainMesh = new THREE.Mesh(geo, mat);
-  scene.add(mainMesh);
-
-  const wireMat = new THREE.MeshBasicMaterial({
-    color: 0x8877cc,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.4,
-  });
-  wireframeMesh = new THREE.Mesh(geo.clone(), wireMat);
-  wireframeMesh.scale.setScalar(1.015);
-  scene.add(wireframeMesh);
-
-  const tex = createTexture();
-
-  const pCount = 500;
-  const pPos = new Float32Array(pCount * 3);
-  const pCol = new Float32Array(pCount * 3);
-  const pSiz = new Float32Array(pCount);
-
-  const palette = [
-    [0.42, 0.55, 1.0],
-    [0.50, 0.35, 0.92],
-    [0.92, 0.30, 0.50],
-    [0.20, 0.72, 0.62],
-    [0.92, 0.52, 0.15],
+  const geos = [
+    new THREE.OctahedronGeometry(1, 0),
+    new THREE.TetrahedronGeometry(1, 0),
+    new THREE.IcosahedronGeometry(1, 0),
   ];
 
-  for (let i = 0; i < pCount; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const r = 2.5 + Math.random() * 2.8;
+  const palette = [
+    [0.50, 0.35, 0.95],
+    [0.35, 0.55, 1.0],
+    [0.95, 0.30, 0.50],
+    [0.92, 0.52, 0.12],
+    [0.20, 0.72, 0.60],
+  ];
 
-    pPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-    pPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    pPos[i * 3 + 2] = r * Math.cos(phi);
+  for (let i = 0; i < SHAPE_COUNT; i++) {
+    const geoIdx = Math.floor(Math.random() * geos.length);
+    const geo = geos[geoIdx].clone();
+    const size = 0.12 + Math.random() * 0.2;
+    geo.scale(size, size, size);
 
     const c = palette[Math.floor(Math.random() * palette.length)];
-    pCol[i * 3] = c[0];
-    pCol[i * 3 + 1] = c[1];
-    pCol[i * 3 + 2] = c[2];
+    const color = new THREE.Color(c[0], c[1], c[2]);
 
-    pSiz[i] = 0.02 + Math.random() * 0.04;
+    const mainMat = new THREE.MeshPhysicalMaterial({
+      color: color,
+      metalness: 0.0,
+      roughness: 0.2,
+      transparent: true,
+      opacity: 0.25,
+      side: THREE.DoubleSide,
+      clearcoat: 0.3,
+      clearcoatRoughness: 0.2,
+    });
+    const mainMesh = new THREE.Mesh(geo, mainMat);
+
+    const edgeMat = new THREE.MeshBasicMaterial({
+      color: color,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35,
+    });
+    const edgeMesh = new THREE.Mesh(geo.clone(), edgeMat);
+    edgeMesh.scale.setScalar(1.02);
+
+    const group = new THREE.Group();
+    group.add(mainMesh);
+    group.add(edgeMesh);
+
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const radius = 1.8 + Math.random() * 2.5;
+
+    group.position.set(
+      radius * Math.sin(phi) * Math.cos(theta),
+      radius * Math.sin(phi) * Math.sin(theta),
+      radius * Math.cos(phi)
+    );
+
+    const orbitSpeed = 0.1 + Math.random() * 0.2;
+    const rotSpeedX = 0.3 + Math.random() * 0.6;
+    const rotSpeedY = 0.4 + Math.random() * 0.8;
+    const phase = Math.random() * Math.PI * 2;
+    const floatAmp = 0.05 + Math.random() * 0.1;
+    const radiusScale = 0.6 + Math.random() * 0.4;
+
+    shapes.push({ group, theta, phi, radius, orbitSpeed, rotSpeedX, rotSpeedY, phase, floatAmp, radiusScale, geoIdx });
+
+    orbitGroup.add(group);
   }
-
-  const pGeom = new THREE.BufferGeometry();
-  pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  pGeom.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-  pGeom.setAttribute('size', new THREE.BufferAttribute(pSiz, 1));
-
-  const pMat = new THREE.PointsMaterial({
-    size: 0.05,
-    map: tex,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.6,
-    blending: THREE.NormalBlending,
-    sizeAttenuation: true,
-    depthWrite: false,
-  });
-
-  particles = new THREE.Points(pGeom, pMat);
-  scene.add(particles);
 
   animate();
   window.addEventListener('resize', onResize);
@@ -144,8 +103,7 @@ function init() {
 }
 
 function onResize() {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+  const w = window.innerWidth, h = window.innerHeight;
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
@@ -162,40 +120,33 @@ function onScroll() {
 
 function animate() {
   requestAnimationFrame(animate);
-  time += 0.01;
+  time += 0.008;
 
   const viewH = window.innerHeight;
   const scrollPct = Math.min(scrollY / viewH, 1);
   const scrollUp = 1 - scrollPct;
 
-  totalRotation = scrollUp * Math.PI * 4;
+  // Orbit rotation: scroll up = rotate faster
+  const orbitRot = scrollUp * Math.PI * 2 + time * 0.05;
+  orbitGroup.rotation.y = orbitRot;
+  orbitGroup.rotation.x = Math.sin(time * 0.1) * 0.05 + mouseY * 0.05;
 
-  if (mainMesh) {
-    mainMesh.rotation.y = totalRotation + mouseX * 0.2;
-    mainMesh.rotation.x = mouseY * 0.15 + Math.sin(time * 0.6) * 0.03;
+  // Individual shape animation
+  for (const s of shapes) {
+    const angle = time * s.orbitSpeed + s.phase;
+    const r = s.radius;
+    const x = r * Math.sin(s.phi) * Math.cos(s.theta + angle);
+    const y = r * Math.sin(s.phi) * Math.sin(s.theta + angle) + Math.sin(time * 0.5 + s.phase) * s.floatAmp;
+    const z = r * Math.cos(s.phi);
 
-    const breathe = 1 + Math.sin(time * 1.2) * 0.03;
-    const floatY = Math.sin(time * 0.8) * 0.1;
-    mainMesh.position.y = floatY;
-    mainMesh.scale.setScalar(breathe);
+    s.group.position.set(x, y, z);
+    s.group.rotation.x += s.rotSpeedX * 0.02;
+    s.group.rotation.y += s.rotSpeedY * 0.02;
   }
 
-  if (wireframeMesh) {
-    wireframeMesh.rotation.x = mainMesh.rotation.x * 0.95;
-    wireframeMesh.rotation.y = mainMesh.rotation.y * 1.05;
-    wireframeMesh.position.y = mainMesh.position.y;
-    wireframeMesh.scale.copy(mainMesh.scale);
-  }
-
-  if (particles) {
-    particles.rotation.y = time * 0.04 + mouseX * 0.05;
-    particles.rotation.x = mouseY * 0.05 + Math.sin(time * 0.3) * 0.02;
-  }
-
-  const px = mouseX * 0.3;
-  const py = mouseY * 0.2;
-  camera.position.x += (px - camera.position.x) * 0.025;
-  camera.position.y += (py - camera.position.y) * 0.025;
+  // Camera parallax
+  camera.position.x += (mouseX * 0.3 - camera.position.x) * 0.02;
+  camera.position.y += (mouseY * 0.2 - camera.position.y) * 0.02;
   camera.lookAt(0, 0, 0);
 
   renderer.render(scene, camera);
