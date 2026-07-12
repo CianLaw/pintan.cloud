@@ -1,4 +1,3 @@
-// ─── Mobile Navigation ───
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
 
@@ -13,23 +12,23 @@ if (navToggle && navLinks) {
   });
 }
 
-// ─── Scroll Animations (Intersection Observer) ───
-const animElements = document.querySelectorAll('.fade-in');
+function setupScrollReveal() {
+  const elements = document.querySelectorAll('.reveal, .fade-in, .reveal-left, .reveal-right, .reveal-scale');
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -60px 0px'
   });
-}, {
-  threshold: 0.1,
-  rootMargin: '0px 0px -50px 0px'
-});
 
-animElements.forEach(el => observer.observe(el));
+  elements.forEach(el => observer.observe(el));
+}
 
-// ─── FAQ Accordion ───
 document.querySelectorAll('.faq-item').forEach(item => {
   item.addEventListener('click', () => {
     const currentlyOpen = document.querySelector('.faq-item.open');
@@ -40,25 +39,33 @@ document.querySelectorAll('.faq-item').forEach(item => {
   });
 });
 
-// ─── Smooth Reveal on Hero ───
-document.addEventListener('DOMContentLoaded', () => {
-  const heroElements = document.querySelectorAll('.hero .fade-in, .hero-tag, .hero-title, .hero-actions, .hero-scroll');
-  heroElements.forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      el.style.transition = 'opacity 0.8s, transform 0.8s';
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }, 200 + i * 150);
-  });
-});
-
-// ─── Parallax hero background ───
-const heroBg = document.querySelector('.hero-bg');
-if (heroBg) {
-  window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    heroBg.style.transform = `translateY(${scrollY * 0.3}px)`;
+function smoothScroll() {
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(anchor.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   });
 }
+
+function initNavScroll() {
+  let lastScroll = 0;
+  const nav = document.querySelector('.nav');
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    if (currentScroll > lastScroll && currentScroll > 100) {
+      nav.style.transform = 'translateY(-100%)';
+    } else {
+      nav.style.transform = 'translateY(0)';
+    }
+    lastScroll = currentScroll;
+  }, { passive: true });
+}
+
+setupScrollReveal();
+smoothScroll();
+initNavScroll();

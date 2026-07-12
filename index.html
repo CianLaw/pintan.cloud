@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<canvas id="three-canvas"></canvas>
+
 <nav class="nav">
   <a href="/" class="nav-logo">Pintan</a>
   <ul class="nav-links" id="navLinks">
@@ -24,41 +26,38 @@
 </nav>
 
 <section class="hero">
-  <div class="hero-bg">
-    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'><rect fill='%23000' width='1920' height='1080'/><circle cx='960' cy='540' r='300' fill='rgba(255,255,255,0.03)'/><circle cx='600' cy='800' r='200' fill='rgba(255,255,255,0.02)'/><circle cx='1400' cy='300' r='250' fill='rgba(255,255,255,0.02)'/></svg>" alt="">
-  </div>
   <div class="hero-content">
-    <p class="hero-tag">Pintan / Personal Space</p>
-    <h1 class="hero-title">Crafting digital experiences through clean design & thoughtful code.</h1>
-    <div class="hero-actions">
+    <p class="hero-tag reveal">Pintan / Personal Space</p>
+    <h1 class="hero-title reveal" style="transition-delay:0.1s">Crafting digital<br>experiences through<br>clean design & code.</h1>
+    <div class="hero-actions reveal" style="transition-delay:0.2s">
       <a href="/blog.html" class="btn">Explore Blog <span class="arrow"></span></a>
-      <span class="hero-scroll"><span class="line"></span> Scroll</span>
+      <span class="hero-scroll"><span class="line"></span> Scroll to explore</span>
     </div>
   </div>
 </section>
 
 <section class="section" id="about">
   <div class="container">
-    <p class="section-label fade-in">About</p>
+    <p class="section-label reveal">About</p>
     <div class="about-grid">
-      <div class="about-text fade-in">
+      <div class="about-text reveal">
         Design-driven developer focused on building minimal, functional, and beautiful digital spaces.
       </div>
-      <div class="about-desc fade-in">
-        <p style="margin-bottom:20px">I&apos;m a developer and designer who believes in the power of simplicity. Every pixel should have a purpose, every interaction should feel natural, and every project should tell a story.</p>
+      <div class="about-desc reveal" style="transition-delay:0.1s">
+        <p style="margin-bottom:20px">I'm a developer and designer who believes in the power of simplicity. Every pixel should have a purpose, every interaction should feel natural, and every project should tell a story.</p>
         <p>Based somewhere between code and creativity, I work on web applications, interactive experiences, and open-source tools. This is my personal space to share thoughts, projects, and everything in between.</p>
       </div>
     </div>
     <div class="about-stats">
-      <div class="fade-in">
+      <div class="reveal">
         <div class="stat-number">05+</div>
         <div class="stat-label">Years of Experience</div>
       </div>
-      <div class="fade-in">
+      <div class="reveal" style="transition-delay:0.1s">
         <div class="stat-number">30+</div>
         <div class="stat-label">Projects Delivered</div>
       </div>
-      <div class="fade-in">
+      <div class="reveal" style="transition-delay:0.2s">
         <div class="stat-number">100%</div>
         <div class="stat-label">Dedication</div>
       </div>
@@ -70,15 +69,15 @@
   <div class="container">
     <div class="portfolio-header">
       <div>
-        <p class="section-label fade-in">Portfolio</p>
-        <h2 class="portfolio-title fade-in">Selected<br>Projects</h2>
+        <p class="section-label reveal">Portfolio</p>
+        <h2 class="portfolio-title reveal">Selected<br>Projects</h2>
       </div>
-      <a href="/about.html" class="btn fade-in">View All <span class="arrow"></span></a>
+      <a href="/about.html" class="btn reveal">View All <span class="arrow"></span></a>
     </div>
     <div class="portfolio-grid">
-      <a href="/about.html" class="portfolio-item fade-in">
+      <a href="/about.html" class="portfolio-item reveal">
         <div class="portfolio-item-img">
-          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23111' width='800' height='600'/><text x='400' y='300' text-anchor='middle' fill='rgba(255,255,255,0.05)' font-size='40' font-family='sans-serif'>Project</text></svg>" alt="">
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23f0ece6' width='800' height='600'/></svg>" alt="">
         </div>
         <div class="portfolio-item-content">
           <p class="portfolio-item-number">(01)</p>
@@ -86,9 +85,9 @@
           <p class="portfolio-item-cat">Design & Development</p>
         </div>
       </a>
-      <a href="/about.html" class="portfolio-item fade-in">
+      <a href="/about.html" class="portfolio-item reveal" style="transition-delay:0.1s">
         <div class="portfolio-item-img">
-          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23111' width='800' height='600'/><text x='400' y='300' text-anchor='middle' fill='rgba(255,255,255,0.05)' font-size='40' font-family='sans-serif'>Project</text></svg>" alt="">
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23f0ece6' width='800' height='600'/></svg>" alt="">
         </div>
         <div class="portfolio-item-content">
           <p class="portfolio-item-number">(02)</p>
@@ -96,9 +95,9 @@
           <p class="portfolio-item-cat">Full-Stack Application</p>
         </div>
       </a>
-      <a href="/about.html" class="portfolio-item fade-in">
+      <a href="/about.html" class="portfolio-item reveal" style="transition-delay:0.2s">
         <div class="portfolio-item-img">
-          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23111' width='800' height='600'/><text x='400' y='300' text-anchor='middle' fill='rgba(255,255,255,0.05)' font-size='40' font-family='sans-serif'>Project</text></svg>" alt="">
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23f0ece6' width='800' height='600'/></svg>" alt="">
         </div>
         <div class="portfolio-item-content">
           <p class="portfolio-item-number">(03)</p>
@@ -106,9 +105,9 @@
           <p class="portfolio-item-cat">Creative Technology</p>
         </div>
       </a>
-      <a href="/about.html" class="portfolio-item fade-in">
+      <a href="/about.html" class="portfolio-item reveal" style="transition-delay:0.3s">
         <div class="portfolio-item-img">
-          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23111' width='800' height='600'/><text x='400' y='300' text-anchor='middle' fill='rgba(255,255,255,0.05)' font-size='40' font-family='sans-serif'>Project</text></svg>" alt="">
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23f0ece6' width='800' height='600'/></svg>" alt="">
         </div>
         <div class="portfolio-item-content">
           <p class="portfolio-item-number">(04)</p>
@@ -124,28 +123,28 @@
   <div class="container">
     <div class="portfolio-header">
       <div>
-        <p class="section-label fade-in">Journal</p>
-        <h2 class="portfolio-title fade-in">Latest<br>Posts</h2>
+        <p class="section-label reveal">Journal</p>
+        <h2 class="portfolio-title reveal">Latest<br>Posts</h2>
       </div>
-      <a href="/blog.html" class="btn fade-in">Read All <span class="arrow"></span></a>
+      <a href="/blog.html" class="btn reveal">Read All <span class="arrow"></span></a>
     </div>
     <div class="blog-grid">
-      <a href="/blog-post.html" class="blog-card fade-in">
+      <a href="/blog-post.html" class="blog-card reveal">
         <p class="blog-card-number">001</p>
         <h3 class="blog-card-title">Building a 3D Particle System from Scratch</h3>
         <p class="blog-card-cat">Development / Jul 2026</p>
       </a>
-      <a href="/blog-post.html" class="blog-card fade-in">
+      <a href="/blog-post.html" class="blog-card reveal" style="transition-delay:0.1s">
         <p class="blog-card-number">002</p>
         <h3 class="blog-card-title">The Art of Minimal Design Principles</h3>
         <p class="blog-card-cat">Design / Jun 2026</p>
       </a>
-      <a href="/blog-post.html" class="blog-card fade-in">
+      <a href="/blog-post.html" class="blog-card reveal" style="transition-delay:0.2s">
         <p class="blog-card-number">003</p>
         <h3 class="blog-card-title">Why I Choose Simplicity Over Complexity</h3>
         <p class="blog-card-cat">Philosophy / Jun 2026</p>
       </a>
-      <a href="/blog-post.html" class="blog-card fade-in">
+      <a href="/blog-post.html" class="blog-card reveal" style="transition-delay:0.3s">
         <p class="blog-card-number">004</p>
         <h3 class="blog-card-title">My Development Workflow in 2026</h3>
         <p class="blog-card-cat">Development / May 2026</p>
@@ -156,31 +155,31 @@
 
 <section class="section" id="faq">
   <div class="container">
-    <p class="section-label fade-in">FAQ</p>
-    <h2 class="portfolio-title fade-in" style="margin-bottom:48px">Frequently Asked<br>Questions</h2>
+    <p class="section-label reveal">FAQ</p>
+    <h2 class="portfolio-title reveal" style="margin-bottom:48px">Frequently Asked<br>Questions</h2>
     <div class="faq-list">
-      <div class="faq-item fade-in">
+      <div class="faq-item reveal">
         <div class="faq-question">
           <span>What kind of projects do you work on?</span>
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">I work on a wide range of projects including web applications, interactive experiences, design systems, and open-source tools. My focus is on clean, functional, and performant solutions.</div>
       </div>
-      <div class="faq-item fade-in">
+      <div class="faq-item reveal" style="transition-delay:0.1s">
         <div class="faq-question">
           <span>Are you available for freelance work?</span>
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">Yes, I'm selectively available for freelance projects. I prefer long-term collaborations and projects that challenge me creatively and technically.</div>
       </div>
-      <div class="faq-item fade-in">
+      <div class="faq-item reveal" style="transition-delay:0.2s">
         <div class="faq-question">
           <span>What technologies do you use?</span>
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">I work primarily with JavaScript/TypeScript, React, Node.js, and Three.js. I'm also experienced with webGL, canvas APIs, and various CSS frameworks. I choose tools based on the project's needs.</div>
       </div>
-      <div class="faq-item fade-in">
+      <div class="faq-item reveal" style="transition-delay:0.3s">
         <div class="faq-question">
           <span>How can I contact you?</span>
           <span class="faq-toggle">+</span>
@@ -229,5 +228,6 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script type="module" src="assets/js/three-scene.js"></script>
 </body>
 </html>
