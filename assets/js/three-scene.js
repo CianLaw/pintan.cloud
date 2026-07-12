@@ -138,8 +138,8 @@ function animate() {
 
   const viewH = window.innerHeight;
   const scrollPct = Math.min(scrollY / viewH, 1);
-  // 往下滚动 = 粒子放大（往上滑手势 = 滚轮向下）
-  const expansion = 1 + scrollPct * 4; // 顶部=1倍，底部=5倍
+  // 往上滑 = 粒子放大
+  const expansion = 1 + (1 - scrollPct) * 4; // 顶部=5倍，底部=1倍
 
   // --- Core particles ---
   if (coreParticles) {
@@ -153,7 +153,7 @@ function animate() {
       const oy = d.origins[i3 + 1];
       const oz = d.origins[i3 + 2];
 
-      const amp = 0.12 + scrollPct * 0.35;
+      const amp = 0.12 + (1 - scrollPct) * 0.35;
       const fx = Math.sin(time * d.speeds[i] + d.phases[i]) * amp * 0.5;
       const fy = Math.cos(time * d.speeds[i] * 0.7 + d.phases[i] * 1.3) * amp * 0.5;
       const fz = Math.sin(time * d.speeds[i] * 0.5 + d.phases[i] * 0.7) * amp * 0.4;
@@ -169,9 +169,9 @@ function animate() {
     coreParticles.geometry.attributes.size.needsUpdate = true;
 
     coreParticles.rotation.y = time * 0.06 + mouseX * 0.1;
-    coreParticles.rotation.x = mouseY * 0.07 + scrollPct * 0.2;
+    coreParticles.rotation.x = mouseY * 0.07 + (1 - scrollPct) * 0.2;
 
-    coreParticles.material.opacity = 0.6 + scrollPct * 0.4;
+    coreParticles.material.opacity = 0.6 + (1 - scrollPct) * 0.4;
   }
 
   // --- Camera ---
