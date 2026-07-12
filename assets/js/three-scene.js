@@ -1,7 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 let scene, camera, renderer;
-let mainMesh, wireframeMesh, glowMesh;
+let mainMesh, wireframeMesh;
 let particles;
 let mouseX = 0, mouseY = 0;
 let scrollY = 0;
@@ -44,39 +44,43 @@ function init() {
   const ambient = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambient);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.5);
+  const key = new THREE.DirectionalLight(0xffffff, 1.8);
   key.position.set(4, 5, 6);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0x8ab4ff, 0.8);
+  const fill = new THREE.DirectionalLight(0x8866ff, 1.0);
   fill.position.set(-4, 2, 3);
   scene.add(fill);
 
-  const rim = new THREE.DirectionalLight(0xff8a8a, 0.5);
+  const rim = new THREE.DirectionalLight(0xff4488, 0.8);
   rim.position.set(0, -4, -5);
   scene.add(rim);
 
-  const geo = new THREE.IcosahedronGeometry(1.35, 1);
+  const top = new THREE.DirectionalLight(0x66ccff, 0.5);
+  top.position.set(0, 6, 0);
+  scene.add(top);
+
+  const geo = new THREE.TorusKnotGeometry(1.1, 0.4, 128, 32, 2, 3);
 
   const mat = new THREE.MeshPhysicalMaterial({
-    color: 0x6b8cff,
-    metalness: 0.05,
-    roughness: 0.1,
+    color: 0x6b4cff,
+    metalness: 0.3,
+    roughness: 0.15,
     transparent: true,
-    opacity: 0.55,
+    opacity: 0.5,
     side: THREE.DoubleSide,
-    clearcoat: 0.8,
-    clearcoatRoughness: 0.1,
-    envMapIntensity: 0.5,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 0.6,
   });
   mainMesh = new THREE.Mesh(geo, mat);
   scene.add(mainMesh);
 
   const wireMat = new THREE.MeshBasicMaterial({
-    color: 0x445588,
+    color: 0x8877cc,
     wireframe: true,
     transparent: true,
-    opacity: 0.35,
+    opacity: 0.4,
   });
   wireframeMesh = new THREE.Mesh(geo.clone(), wireMat);
   wireframeMesh.scale.setScalar(1.015);
@@ -168,10 +172,10 @@ function animate() {
 
   if (mainMesh) {
     mainMesh.rotation.y = totalRotation + mouseX * 0.2;
-    mainMesh.rotation.x = mouseY * 0.15;
+    mainMesh.rotation.x = mouseY * 0.15 + Math.sin(time * 0.6) * 0.03;
 
-    const breathe = 1 + Math.sin(time * 1.2) * 0.025;
-    const floatY = Math.sin(time * 0.8) * 0.08;
+    const breathe = 1 + Math.sin(time * 1.2) * 0.03;
+    const floatY = Math.sin(time * 0.8) * 0.1;
     mainMesh.position.y = floatY;
     mainMesh.scale.setScalar(breathe);
   }
