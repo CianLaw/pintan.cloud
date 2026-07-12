@@ -18,9 +18,9 @@ function createParticleTexture() {
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
   gradient.addColorStop(0, 'rgba(255,255,255,1)');
-  gradient.addColorStop(0.2, 'rgba(255,245,235,0.9)');
-  gradient.addColorStop(0.5, 'rgba(255,235,215,0.5)');
-  gradient.addColorStop(1, 'rgba(255,235,215,0)');
+  gradient.addColorStop(0.15, 'rgba(255,255,255,0.9)');
+  gradient.addColorStop(0.4, 'rgba(200,220,255,0.5)');
+  gradient.addColorStop(1, 'rgba(200,220,255,0)');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 128, 128);
   const tex = new THREE.CanvasTexture(canvas);
@@ -57,12 +57,12 @@ function init() {
   const origins = new Float32Array(PARTICLE_COUNT * 3);
 
   const palette = [
-    [1.0, 0.98, 0.95],
-    [1.0, 0.95, 0.88],
-    [1.0, 0.92, 0.80],
-    [0.95, 0.90, 0.85],
-    [1.0, 0.97, 0.92],
-    [0.92, 0.88, 0.82],
+    [0.40, 0.56, 0.96],
+    [0.55, 0.36, 0.96],
+    [0.96, 0.36, 0.60],
+    [0.20, 0.80, 0.72],
+    [0.96, 0.60, 0.20],
+    [0.96, 0.45, 0.45],
   ];
 
   for (let i = 0; i < PARTICLE_COUNT; i++) {
