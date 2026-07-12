@@ -1,29 +1,12 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 let scene, camera, renderer;
-let coreParticles;
+let mainMesh, wireframeMesh;
+let particles;
 let mouseX = 0, mouseY = 0;
 let scrollY = 0;
 let time = 0;
-
-const CORE_COUNT = 3000;
-
-function createParticleTexture() {
-  const c = document.createElement('canvas');
-  c.width = 128;
-  c.height = 128;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.15, 'rgba(255,255,255,0.85)');
-  g.addColorStop(0.4, 'rgba(255,255,255,0.3)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 128, 128);
-  const tex = new THREE.CanvasTexture(c);
-  tex.needsUpdate = true;
-  return tex;
-}
+let totalRotation = 0;
 
 function init() {
   const canvas = document.getElementById('three-canvas');
@@ -34,82 +17,106 @@ function init() {
   const w = window.innerWidth;
   const h = window.innerHeight;
 
-  camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 200);
-  camera.position.z = 8;
+  camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+  camera.position.set(0, 0, 5.5);
 
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
 
-  const tex = createParticleTexture();
+  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambient);
 
-  // Core particle cluster (center)
-  const corePositions = new Float32Array(CORE_COUNT * 3);
-  const coreColors = new Float32Array(CORE_COUNT * 3);
-  const coreSizes = new Float32Array(CORE_COUNT);
-  const coreOrigins = new Float32Array(CORE_COUNT * 3);
-  const corePhases = new Float32Array(CORE_COUNT);
-  const coreSpeeds = new Float32Array(CORE_COUNT);
+  const key = new THREE.DirectionalLight(0xffffff, 1.2);
+  key.position.set(3, 4, 5);
+  scene.add(key);
 
-  const corePalette = [
-    [0.35, 0.50, 0.95],
-    [0.50, 0.30, 0.92],
-    [0.90, 0.28, 0.52],
-    [0.18, 0.72, 0.62],
+  const fill = new THREE.DirectionalLight(0x8ab4ff, 0.6);
+  fill.position.set(-3, 1, 2);
+  scene.add(fill);
+
+  const rim = new THREE.DirectionalLight(0xff8a8a, 0.4);
+  rim.position.set(0, -3, -4);
+  scene.add(rim);
+
+  const geo = new THREE.IcosahedronGeometry(1.3, 1);
+
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0x6b8cff,
+    metalness: 0.05,
+    roughness: 0.1,
+    transparent: true,
+    opacity: 0.3,
+    side: THREE.DoubleSide,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 0.4,
+  });
+
+  mainMesh = new THREE.Mesh(geo, mat);
+  scene.add(mainMesh);
+
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0x999999,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.15,
+  });
+  wireframeMesh = new THREE.Mesh(geo.clone(), wireMat);
+  wireframeMesh.scale.setScalar(1.02);
+  scene.add(wireframeMesh);
+
+  const pCount = 600;
+  const pPos = new Float32Array(pCount * 3);
+  const pCol = new Float32Array(pCount * 3);
+  const pSiz = new Float32Array(pCount);
+
+  const palette = [
+    [0.42, 0.55, 1.0],
+    [0.50, 0.35, 0.92],
+    [0.92, 0.30, 0.50],
+    [0.20, 0.72, 0.62],
     [0.92, 0.52, 0.15],
-    [0.88, 0.35, 0.35],
   ];
 
-  for (let i = 0; i < CORE_COUNT; i++) {
+  for (let i = 0; i < pCount; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = 1.8 * Math.cbrt(Math.random());
+    const r = 2.2 + Math.random() * 2.5;
 
-    const x = r * Math.sin(phi) * Math.cos(theta);
-    const y = r * Math.sin(phi) * Math.sin(theta);
-    const z = r * Math.cos(phi);
+    pPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    pPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    pPos[i * 3 + 2] = r * Math.cos(phi);
 
-    corePositions[i * 3] = x;
-    corePositions[i * 3 + 1] = y;
-    corePositions[i * 3 + 2] = z;
-    coreOrigins[i * 3] = x;
-    coreOrigins[i * 3 + 1] = y;
-    coreOrigins[i * 3 + 2] = z;
+    const c = palette[Math.floor(Math.random() * palette.length)];
+    pCol[i * 3] = c[0];
+    pCol[i * 3 + 1] = c[1];
+    pCol[i * 3 + 2] = c[2];
 
-    const c = corePalette[Math.floor(Math.random() * corePalette.length)];
-    coreColors[i * 3] = c[0];
-    coreColors[i * 3 + 1] = c[1];
-    coreColors[i * 3 + 2] = c[2];
-
-    coreSizes[i] = 0.03 + Math.random() * 0.06;
-    corePhases[i] = Math.random() * Math.PI * 2;
-    coreSpeeds[i] = 0.3 + Math.random() * 0.7;
+    pSiz[i] = 0.015 + Math.random() * 0.03;
   }
 
-  const coreGeom = new THREE.BufferGeometry();
-  coreGeom.setAttribute('position', new THREE.BufferAttribute(corePositions, 3));
-  coreGeom.setAttribute('color', new THREE.BufferAttribute(coreColors, 3));
-  coreGeom.setAttribute('size', new THREE.BufferAttribute(coreSizes, 1));
+  const pGeom = new THREE.BufferGeometry();
+  pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  pGeom.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+  pGeom.setAttribute('size', new THREE.BufferAttribute(pSiz, 1));
 
-  const coreMat = new THREE.PointsMaterial({
-    size: 0.06,
-    map: tex,
+  const pMat = new THREE.PointsMaterial({
+    size: 0.04,
     vertexColors: true,
     transparent: true,
-    opacity: 0.95,
+    opacity: 0.5,
     blending: THREE.NormalBlending,
     sizeAttenuation: true,
     depthWrite: false,
   });
 
-  coreParticles = new THREE.Points(coreGeom, coreMat);
-  scene.add(coreParticles);
-
-  // Store data for animation
-  window.__coreData = { origins: coreOrigins, phases: corePhases, speeds: coreSpeeds };
+  particles = new THREE.Points(pGeom, pMat);
+  scene.add(particles);
 
   animate();
-
   window.addEventListener('resize', onResize);
   document.addEventListener('mousemove', onMouseMove);
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -134,49 +141,42 @@ function onScroll() {
 
 function animate() {
   requestAnimationFrame(animate);
-  time += 0.008;
+  time += 0.01;
 
   const viewH = window.innerHeight;
   const scrollPct = Math.min(scrollY / viewH, 1);
-  // 往上滑 = 粒子放大
-  const expansion = 1 + (1 - scrollPct) * 4; // 顶部=5倍，底部=1倍
+  const scrollUp = 1 - scrollPct;
 
-  // --- Core particles ---
-  if (coreParticles) {
-    const pos = coreParticles.geometry.attributes.position.array;
-    const sizes = coreParticles.geometry.attributes.size.array;
-    const d = window.__coreData;
+  // 往上滑 = Y轴旋转，滚多少转多少
+  totalRotation = scrollUp * Math.PI * 4;
 
-    for (let i = 0; i < CORE_COUNT; i++) {
-      const i3 = i * 3;
-      const ox = d.origins[i3];
-      const oy = d.origins[i3 + 1];
-      const oz = d.origins[i3 + 2];
+  if (mainMesh) {
+    mainMesh.rotation.y = totalRotation + mouseX * 0.2;
+    mainMesh.rotation.x = mouseY * 0.15;
 
-      const amp = 0.12 + (1 - scrollPct) * 0.35;
-      const fx = Math.sin(time * d.speeds[i] + d.phases[i]) * amp * 0.5;
-      const fy = Math.cos(time * d.speeds[i] * 0.7 + d.phases[i] * 1.3) * amp * 0.5;
-      const fz = Math.sin(time * d.speeds[i] * 0.5 + d.phases[i] * 0.7) * amp * 0.4;
-
-      pos[i3] = ox * expansion + fx;
-      pos[i3 + 1] = oy * expansion + fy;
-      pos[i3 + 2] = oz * expansion + fz;
-
-      sizes[i] = (0.035 + (i % 6) * 0.01) * expansion * 0.8;
-    }
-
-    coreParticles.geometry.attributes.position.needsUpdate = true;
-    coreParticles.geometry.attributes.size.needsUpdate = true;
-
-    coreParticles.rotation.y = time * 0.06 + mouseX * 0.1;
-    coreParticles.rotation.x = mouseY * 0.07 + (1 - scrollPct) * 0.2;
-
-    coreParticles.material.opacity = 0.6 + (1 - scrollPct) * 0.4;
+    const breathe = 1 + Math.sin(time * 1.2) * 0.025;
+    const floatY = Math.sin(time * 0.8) * 0.08;
+    mainMesh.position.y = floatY;
+    mainMesh.scale.setScalar(breathe);
   }
 
-  // --- Camera ---
-  camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.02;
-  camera.position.y += (mouseY * 0.3 - camera.position.y) * 0.02;
+  if (wireframeMesh) {
+    wireframeMesh.rotation.x = mainMesh.rotation.x * 0.95;
+    wireframeMesh.rotation.y = mainMesh.rotation.y * 1.05;
+    wireframeMesh.position.y = mainMesh.position.y;
+    wireframeMesh.scale.copy(mainMesh.scale);
+  }
+
+  if (particles) {
+    particles.rotation.y = time * 0.04;
+    particles.rotation.x = mouseY * 0.05 + Math.sin(time * 0.3) * 0.02;
+  }
+
+  // 视差
+  const px = mouseX * 0.3;
+  const py = mouseY * 0.2;
+  camera.position.x += (px - camera.position.x) * 0.025;
+  camera.position.y += (py - camera.position.y) * 0.025;
   camera.lookAt(0, 0, 0);
 
   renderer.render(scene, camera);
