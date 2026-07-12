@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Building a 3D Particle System — Pintan</title>
+<meta name="description" content="A deep dive into creating a 3D particle system using Three.js and simplex noise.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Pintan</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/">Home</a></li>
+    <li><a href="/about.html">About</a></li>
+    <li><a href="/blog.html" class="active">Blog</a></li>
+    <li><a href="/contact.html">Contact</a></li>
+  </ul>
+  <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section class="page-header">
+  <div class="container">
+    <p class="section-label fade-in">Development / Jul 2026</p>
+    <h1 class="page-title fade-in">Building a 3D Particle System from Scratch</h1>
+    <p class="page-sub fade-in">A technical deep dive into creating a performant particle system using Three.js, simplex noise, and GPU-friendly techniques.</p>
+  </div>
+</section>
+
+<article class="blog-single">
+  <div class="blog-meta fade-in">
+    <span>By Pintan</span>
+    <span>—</span>
+    <span>12 min read</span>
+  </div>
+
+  <div class="blog-single-content fade-in">
+    <p>Particle systems are one of those things that look magical but are surprisingly straightforward once you understand the core concepts. In this post, I'll walk through how I built the 3D particle universe for my Cosmic Sandbox project.</p>
+
+    <h2>The Foundation: BufferGeometry</h2>
+    <p>Three.js provides BufferGeometry as the backbone for rendering large numbers of vertices efficiently. Unlike traditional geometry, BufferGeometry stores data in typed arrays that can be sent directly to the GPU with minimal overhead.</p>
+    <p>For a particle system, we need at minimum a position attribute (3 floats per particle: x, y, z) and optionally a color attribute. With 30,000 particles, that's 90,000 floats for positions alone — a trivially small amount for modern GPUs.</p>
+
+    <h2>Simplex Noise for Organic Movement</h2>
+    <p>To make the particles move organically, I implemented 3D simplex noise. Unlike Perlin noise, simplex noise has a lower computational complexity and produces fewer directional artifacts, making it ideal for fluid-looking animations.</p>
+    <p>The key insight is to use time as the fourth dimension input to the noise function. This creates continuously evolving movement patterns that never repeat exactly.</p>
+
+    <blockquote>Simplex noise gives us natural-looking motion without the overhead of physics simulations. It's the perfect tool for creating living, breathing particle systems.</blockquote>
+
+    <h2>Performance Considerations</h2>
+    <p>With 30,000 particles, every optimization matters. Here are the key strategies I used:</p>
+    <p>First, avoid allocations in the render loop. All temporary vectors and colors are pre-allocated once and reused every frame. This prevents garbage collection pauses that would destroy the smoothness of the animation.</p>
+    <p>Second, use AdditiveBlending for particles. This not only looks better (bright particles glow against dark backgrounds), but also reduces overdraw issues since particles don't obscure each other.</p>
+    <p>Third, compute target positions in a separate buffer and interpolate. This decouples the logical simulation from the visual state, allowing for smooth transitions between different modes.</p>
+
+    <h2>Putting It All Together</h2>
+    <p>The final system supports multiple modes: a cosmic solar system with orbiting planets, preset celestial patterns, custom image-based 3D reliefs, and built-in geometric shapes. Each mode simply writes to the same target buffer, and the animation loop handles the interpolation.</p>
+    <p>The result is a flexible, performant particle engine that can power everything from interactive art to data visualization.</p>
+  </div>
+</article>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Pintan</div>
+      <p class="footer-desc">Crafting digital experiences through clean design and thoughtful code. Based somewhere between creativity and technology.</p>
+    </div>
+    <div>
+      <p class="footer-col-title">Pages</p>
+      <ul class="footer-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Social</p>
+      <ul class="footer-links">
+        <li><a href="#" target="_blank">GitHub</a></li>
+        <li><a href="#" target="_blank">Twitter</a></li>
+        <li><a href="#" target="_blank">Dribbble</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Contact</p>
+      <ul class="footer-links">
+        <li><a href="mailto:hello@pintan.cloud">hello@pintan.cloud</a></li>
+        <li><a href="/contact.html">Send a Message</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Pintan. All rights reserved.</span>
+    <span>Designed with purpose</span>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
