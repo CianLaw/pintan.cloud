@@ -295,34 +295,6 @@ img {
   gap: 48px;
 }
 
-.hero-scroll-indicator {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 32px;
-  border: 1.5px solid var(--text-muted);
-  border-radius: 10px;
-  pointer-events: none;
-}
-.hero-scroll-indicator::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 8px;
-  background: var(--text-muted);
-  border-radius: 1px;
-  animation: scrollBounce 2s ease-in-out infinite;
-}
-@keyframes scrollBounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 1; }
-  50% { transform: translateX(-50%) translateY(6px); opacity: 0.3; }
-}
-
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
