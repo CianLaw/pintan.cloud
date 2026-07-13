@@ -6,12 +6,29 @@
 <title>第零页 — 个人博客与作品集</title>
 <meta name="description" content="PageZero 第零页 — 一位17岁水瓶座男生的个人空间，分享代码、摄影与生活。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>P</text></svg>">
-<base href="/pintan.cloud/"><link rel="stylesheet" href="assets/css/style.css">
+<base href="/pintan.cloud/">
+<link rel="stylesheet" href="assets/css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
 </head>
 <body>
 
 <canvas id="three-canvas"></canvas>
 <div id="three-overlay"></div>
+
+<div class="scroll-progress">
+  <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+</div>
+
+<div class="scroll-indicator" id="scrollIndicator">
+  <span class="scroll-label">SCROLL</span>
+  <span class="scroll-arrow">↓</span>
+</div>
 
 <nav class="nav">
   <a href="index.html" class="nav-logo"><img src="assets/img/logo.svg" alt="第零页" height="32"></a>
@@ -28,9 +45,9 @@
 
 <section class="hero">
   <div class="hero-content">
-    <p class="hero-tag reveal">PageZero / 第零页</p>
-    <h1 class="hero-title reveal" style="transition-delay:0.1s">在代码与生活之间<br>记录成长的每一步</h1>
-    <div class="hero-actions reveal" style="transition-delay:0.2s">
+    <p class="hero-tag">PageZero / 第零页</p>
+    <h1 class="hero-title">在代码与生活之间<br>记录成长的每一步</h1>
+    <div class="hero-actions">
       <a href="blog.html" class="btn">浏览日志 <span class="arrow"></span></a>
     </div>
   </div>
@@ -38,26 +55,26 @@
 
 <section class="section" id="about">
   <div class="container">
-    <p class="section-label reveal">关于我</p>
+    <p class="section-label">关于我</p>
     <div class="about-grid">
-      <div class="about-text reveal">
+      <div class="about-text">
         17岁水瓶座男生，在热爱中探索世界，在代码里表达自我。
       </div>
-      <div class="about-desc reveal" style="transition-delay:0.1s">
+      <div class="about-desc">
         <p style="margin-bottom:20px">我今年17岁，水瓶座男生，性格外向开朗，乐于与人交流相处。平日里兴趣丰富，喜欢拿起相机拍照，捕捉生活里细碎美好的瞬间；闲暇时靠听书沉淀自己，在不同故事里拓宽眼界。</p>
         <p>也坚持运动，享受挥洒汗水带来的松弛感；同时十分痴迷编程，乐于钻研代码逻辑，享受一步步完成项目、解决问题带来的成就感。热爱多元的生活，愿意不断尝试新鲜事物，在各类爱好里慢慢丰富自我。</p>
       </div>
     </div>
     <div class="about-stats">
-      <div class="reveal">
+      <div class="stat-item">
         <div class="stat-number">4+</div>
         <div class="stat-label">学编程的年头</div>
       </div>
-      <div class="reveal" style="transition-delay:0.1s">
+      <div class="stat-item">
         <div class="stat-number">10+</div>
         <div class="stat-label">个人项目</div>
       </div>
-      <div class="reveal" style="transition-delay:0.2s">
+      <div class="stat-item">
         <div class="stat-number">∞</div>
         <div class="stat-label">好奇心</div>
       </div>
@@ -69,13 +86,13 @@
   <div class="container">
     <div class="portfolio-header">
       <div>
-        <p class="section-label reveal">作品</p>
-        <h2 class="portfolio-title reveal">近期<br>项目</h2>
+        <p class="section-label">作品</p>
+        <h2 class="portfolio-title">近期<br>项目</h2>
       </div>
-      <a href="about.html" class="btn reveal">查看全部 <span class="arrow"></span></a>
+      <a href="about.html" class="btn">查看全部 <span class="arrow"></span></a>
     </div>
     <div class="portfolio-grid">
-      <a href="about.html" class="portfolio-item reveal">
+      <a href="about.html" class="portfolio-item">
         <div class="portfolio-item-img">
           <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23e8e4de' width='800' height='600'/></svg>" alt="">
         </div>
@@ -85,7 +102,7 @@
           <p class="portfolio-item-cat">前端开发</p>
         </div>
       </a>
-      <a href="about.html" class="portfolio-item reveal" style="transition-delay:0.1s">
+      <a href="about.html" class="portfolio-item">
         <div class="portfolio-item-img">
           <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23e8e4de' width='800' height='600'/></svg>" alt="">
         </div>
@@ -95,7 +112,7 @@
           <p class="portfolio-item-cat">创意编程</p>
         </div>
       </a>
-      <a href="about.html" class="portfolio-item reveal" style="transition-delay:0.2s">
+      <a href="about.html" class="portfolio-item">
         <div class="portfolio-item-img">
           <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23e8e4de' width='800' height='600'/></svg>" alt="">
         </div>
@@ -105,7 +122,7 @@
           <p class="portfolio-item-cat">摄影记录</p>
         </div>
       </a>
-      <a href="about.html" class="portfolio-item reveal" style="transition-delay:0.3s">
+      <a href="about.html" class="portfolio-item">
         <div class="portfolio-item-img">
           <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect fill='%23e8e4de' width='800' height='600'/></svg>" alt="">
         </div>
@@ -123,28 +140,28 @@
   <div class="container">
     <div class="portfolio-header">
       <div>
-        <p class="section-label reveal">日志</p>
-        <h2 class="portfolio-title reveal">最近<br>更新</h2>
+        <p class="section-label">日志</p>
+        <h2 class="portfolio-title">最近<br>更新</h2>
       </div>
-      <a href="blog.html" class="btn reveal">阅读全部 <span class="arrow"></span></a>
+      <a href="blog.html" class="btn">阅读全部 <span class="arrow"></span></a>
     </div>
     <div class="blog-grid">
-      <a href="blog-post.html" class="blog-card reveal">
+      <a href="blog-post.html" class="blog-card">
         <p class="blog-card-number">001</p>
         <h3 class="blog-card-title">从零开始搭建个人博客</h3>
         <p class="blog-card-cat">技术 / 2026年7月</p>
       </a>
-      <a href="blog-post.html" class="blog-card reveal" style="transition-delay:0.1s">
+      <a href="blog-post.html" class="blog-card">
         <p class="blog-card-number">002</p>
         <h3 class="blog-card-title">用代码创造视觉艺术</h3>
         <p class="blog-card-cat">创意 / 2026年6月</p>
       </a>
-      <a href="blog-post.html" class="blog-card reveal" style="transition-delay:0.2s">
+      <a href="blog-post.html" class="blog-card">
         <p class="blog-card-number">003</p>
         <h3 class="blog-card-title">拍照教会我的那些事</h3>
         <p class="blog-card-cat">生活 / 2026年6月</p>
       </a>
-      <a href="blog-post.html" class="blog-card reveal" style="transition-delay:0.3s">
+      <a href="blog-post.html" class="blog-card">
         <p class="blog-card-number">004</p>
         <h3 class="blog-card-title">我的编程学习之路</h3>
         <p class="blog-card-cat">技术 / 2026年5月</p>
@@ -155,31 +172,31 @@
 
 <section class="section" id="faq">
   <div class="container">
-    <p class="section-label reveal">常见问题</p>
-    <h2 class="portfolio-title reveal" style="margin-bottom:48px">你可能想<br>了解的</h2>
+    <p class="section-label">常见问题</p>
+    <h2 class="portfolio-title" style="margin-bottom:48px">你可能想<br>了解的</h2>
     <div class="faq-list">
-      <div class="faq-item reveal">
+      <div class="faq-item">
         <div class="faq-question">
           <span>你平时用什么技术做项目？</span>
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">我主要使用 JavaScript/TypeScript、React、Node.js 和 Three.js。也尝试过 WebGL、Canvas 动画等。选择什么工具取决于项目需求，但前端是我最擅长的方向。</div>
       </div>
-      <div class="faq-item reveal" style="transition-delay:0.1s">
+      <div class="faq-item">
         <div class="faq-question">
           <span>你为什么叫「第零页」？</span>
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">「第零页」意味着一切的起点。就像书的第一页之前还有一页空白，代表无限的可能性。我希望这个网站是我所有创作的起点。</div>
       </div>
-      <div class="faq-item reveal" style="transition-delay:0.2s">
+      <div class="faq-item">
         <div class="faq-question">
           <span>你对编程的兴趣从哪里来的？</span>
           <span class="faq-toggle">+</span>
         </div>
         <div class="faq-answer">大概从小学高年级开始接触，一开始觉得「代码能控制电脑好酷」，后来越学越深，慢慢体会到编程不只是写代码，更是一种解决问题的思维方式。</div>
       </div>
-      <div class="faq-item reveal" style="transition-delay:0.3s">
+      <div class="faq-item">
         <div class="faq-question">
           <span>怎么联系你？</span>
           <span class="faq-toggle">+</span>
@@ -225,7 +242,9 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script type="module" src="assets/js/three-scene.js"></script>
+<script type="module" src="assets/js/main.js"></script>
 </body>
 </html>

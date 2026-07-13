@@ -1,81 +1,81 @@
+import { updateScrollProgress } from './three-scene.js';
+
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
 
 if (navToggle && navLinks) {
-  navToggle.addEventListener('click', () => {
-    navLinks.classList.toggle('open');
-  });
+  navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
   document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-    });
+    link.addEventListener('click', () => navLinks.classList.remove('open'));
   });
-}
-
-function setupScrollReveal() {
-  const elements = document.querySelectorAll('.reveal, .fade-in, .reveal-left, .reveal-right, .reveal-scale');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -60px 0px'
-  });
-
-  elements.forEach(el => observer.observe(el));
 }
 
 document.querySelectorAll('.faq-item').forEach(item => {
   item.addEventListener('click', () => {
-    const currentlyOpen = document.querySelector('.faq-item.open');
-    if (currentlyOpen && currentlyOpen !== item) {
-      currentlyOpen.classList.remove('open');
-    }
+    const open = document.querySelector('.faq-item.open');
+    if (open && open !== item) open.classList.remove('open');
     item.classList.toggle('open');
   });
 });
 
-function smoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', e => {
-      e.preventDefault();
-      const target = document.querySelector(anchor.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+let lastScroll = 0;
+const nav = document.querySelector('.nav');
+const overlay = document.getElementById('three-overlay');
+const canvas = document.getElementById('three-canvas');
+const progressBar = document.getElementById('scrollProgressBar');
+const scrollIndicator = document.getElementById('scrollIndicator');
+
+gsap.registerPlugin(ScrollTrigger);
+
+const contentSections = document.querySelectorAll('.section');
+if (contentSections.length > 0) {
+  const first = contentSections[0];
+  const last = contentSections[contentSections.length - 1];
+  ScrollTrigger.create({
+    trigger: first,
+    start: 'top bottom',
+    end: () => last.offsetTop + last.offsetHeight - window.innerHeight * 0.3,
+    onUpdate: self => {
+      const p = Math.min(self.progress, 1);
+      updateScrollProgress(p);
+      if (overlay) overlay.style.opacity = Math.min(p * 2, 1);
+      if (canvas) canvas.style.opacity = Math.max(0, 1 - p * 3);
+      if (progressBar) progressBar.style.height = `${p * 100}%`;
+      if (scrollIndicator) {
+        scrollIndicator.style.opacity = p > 0.05 ? '0' : '1';
+        scrollIndicator.style.pointerEvents = p > 0.05 ? 'none' : 'auto';
       }
-    });
+    },
   });
 }
 
-function initNavScroll() {
-  let lastScroll = 0;
-  const nav = document.querySelector('.nav');
-  const overlay = document.getElementById('three-overlay');
-  const canvas = document.getElementById('three-canvas');
+const sectionElements = document.querySelectorAll('.section');
+sectionElements.forEach(section => {
+  const items = section.querySelectorAll(
+    '.about-text, .about-desc p, .stat-item, .portfolio-item, .blog-card, .faq-item, .section-label, .portfolio-title, .portfolio-header .btn'
+  );
+  if (items.length === 0) return;
+  gsap.from(items, {
+    scrollTrigger: {
+      trigger: section,
+      start: 'top 85%',
+      toggleActions: 'play none none none',
+    },
+    y: 50,
+    opacity: 0,
+    duration: 0.7,
+    stagger: 0.08,
+    ease: 'back.out(1.6)',
+    overwrite: 'auto',
+  });
+});
 
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.scrollY;
-    const vh = window.innerHeight;
-
-    if (overlay) {
-      const pct = Math.min(currentScroll / vh, 1);
-      overlay.style.opacity = pct;
-      if (canvas) canvas.style.opacity = Math.max(0, 1 - pct * 2);
-    }
-
-    if (currentScroll > lastScroll && currentScroll > 100) {
-      nav.style.top = '-80px';
-    } else {
-      nav.style.top = '16px';
-    }
-    lastScroll = currentScroll;
-  }, { passive: true });
-}
-
-setupScrollReveal();
-smoothScroll();
-initNavScroll();
+window.addEventListener('scroll', () => {
+  const currentScroll = window.scrollY;
+  if (currentScroll > lastScroll && currentScroll > 100) {
+    nav.style.top = '-80px';
+  } else {
+    nav.style.top = '16px';
+  }
+  lastScroll = currentScroll;
+}, { passive: true });
