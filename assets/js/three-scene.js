@@ -5,189 +5,147 @@ let mainGroup, knot1, knot2, glowRing, particles;
 let mouseX = 0, mouseY = 0, mouseZone = 'center';
 let scrollBoost = 0;
 let state = { scale: 1, posX: 0, posY: 0, posZ: 0 };
-let animTrigger = 0, burstPhase = 0;
-let time = 0;
-let particleVel = [];
+let animTrigger = 0;
+let time = 0, shaderTime = 0;
+let shaderRef = null;
 
 function init() {
   const canvas = document.getElementById('three-canvas');
   if (!canvas) return;
 
   scene = new THREE.Scene();
-  const w = window.innerWidth, h = window.innerHeight;
 
-  camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
-  camera.position.set(0, 0.2, 6);
+  camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0.15, 8);
 
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(w, h);
+  renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.7;
+  renderer.toneMappingExposure = 0.6;
 
-  const amb = new THREE.AmbientLight(0x443366, 0.25);
-  scene.add(amb);
+  scene.add(new THREE.AmbientLight(0x556688, 0.3));
+
   const key = new THREE.DirectionalLight(0xffffff, 2.5);
-  key.position.set(4, 6, 7);
+  key.position.set(5, 6, 8);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0x7744cc, 0.8);
-  fill.position.set(-4, 3, 2);
+
+  const fill = new THREE.DirectionalLight(0x9977bb, 0.8);
+  fill.position.set(-5, 4, 3);
   scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xaa44ff, 0.4);
-  rim.position.set(0, -5, -6);
+
+  const rim = new THREE.DirectionalLight(0xbb88ff, 0.4);
+  rim.position.set(0, -6, -7);
   scene.add(rim);
 
   mainGroup = new THREE.Group();
+  mainGroup.position.z = -1.5;
   scene.add(mainGroup);
 
-  const vs = `
-    uniform float uTime;
-    uniform float uDistortion;
-    uniform float uTrigger;
-    uniform float uMouseZone;
-    varying vec3 vNormal;
-    varying vec3 vPos;
-    varying vec3 vWorldPos;
-    void main() {
-      vec3 pos = position;
-      float n = sin(pos.x*4.5 + uTime*0.55)*0.012
-              + cos(pos.y*5.5 + uTime*0.45)*0.012
-              + sin(pos.z*6.5 + uTime*0.65)*0.012;
-      float trig = sin(pos.x*3.5 + uTrigger*6.28)*0.025
-                 + cos(pos.y*4.0 + uTrigger*6.28)*0.025;
-      n += trig * uTrigger * 0.8;
-      pos += normal * n * uDistortion;
-      vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
-      vNormal = normalize(normalMatrix * normal);
-      vPos = mvPos.xyz;
-      vWorldPos = (modelMatrix * vec4(pos, 1.0)).xyz;
-      gl_Position = projectionMatrix * mvPos;
-    }
-  `;
-
-  const fs = `
-    uniform vec3 uColor1;
-    uniform vec3 uColor2;
-    uniform vec3 uColor3;
-    uniform vec3 uGlowColor;
-    uniform float uTime;
-    uniform float uTrigger;
-    uniform float uMouseZone;
-    uniform float uBurst;
-    varying vec3 vNormal;
-    varying vec3 vPos;
-    varying vec3 vWorldPos;
-    void main() {
-      vec3 viewDir = normalize(-vPos);
-      float NdotV = max(dot(viewDir, vNormal), 0.0);
-      float fresnel = pow(1.0 - NdotV, 3.0);
-      float edgeGlow = pow(1.0 - abs(dot(viewDir, vNormal)), 5.0);
-      float iri = sin(vWorldPos.x*2.5 + vWorldPos.y*3.0 + vWorldPos.z*2.0 + uTime*0.2)*0.5 + 0.5;
-      vec3 iriColor = mix(uColor1, uColor2, iri);
-      iriColor = mix(iriColor, uColor3, fresnel*0.6);
-      float zoneShift = sin(uMouseZone*3.14)*0.15;
-      vec3 base = mix(iriColor, vec3(0.5,0.15,0.6), zoneShift);
-      float vein = sin(vWorldPos.x*9.0 + uTime*0.4)*0.5+0.5
-                 + cos(vWorldPos.y*11.0 + uTime*0.6)*0.5+0.5;
-      vein = sin(vein*3.14)*0.35;
-      vec3 vc = uGlowColor * vein * 0.2 * (1.0 + uTrigger*1.5);
-      float b = uBurst * exp(-pow(length(vWorldPos.xy)*2.0 - uBurst*2.0, 2.0)*3.0);
-      vec3 burstGlow = uGlowColor * b * 0.5;
-      vec3 glow = uGlowColor * edgeGlow * 0.5 * (1.0 + uTrigger*0.8);
-      float pulse = 0.92 + sin(uTime*0.35 + fresnel*3.0)*0.06;
-      float alpha = 0.85 + uTrigger*0.1 + b*0.1;
-      gl_FragColor = vec4((base + glow + vc + burstGlow) * pulse, alpha);
-    }
-  `;
-
-  const uniformDef = {
-    uTime: { value: 0 },
-    uDistortion: { value: 1.0 },
-    uTrigger: { value: 0.0 },
-    uMouseZone: { value: 0.0 },
-    uBurst: { value: 0.0 },
-    uColor1: { value: new THREE.Color(0.06, 0.02, 0.18) },
-    uColor2: { value: new THREE.Color(0.25, 0.05, 0.35) },
-    uColor3: { value: new THREE.Color(0.45, 0.12, 0.40) },
-    uGlowColor: { value: new THREE.Color(0.50, 0.20, 0.80) },
+  const knotGeo = new THREE.TorusKnotGeometry(1.0, 0.28, 280, 40);
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0.50, 0.30, 0.70),
+    metalness: 0.0,
+    roughness: 0.02,
+    transparent: true,
+    transmission: 0.55,
+    thickness: 2.5,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.04,
+    envMapIntensity: 1.2,
+    ior: 1.5,
+    emissive: new THREE.Color(0.28, 0.08, 0.48),
+    emissiveIntensity: 0.06,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = { value: 0 };
+    shader.uniforms.uDistort = { value: 0 };
+    shader.uniforms.uBurst = { value: 0 };
+    shaderRef = shader;
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      [
+        '#include <begin_vertex>',
+        'float w = sin(position.x*3.5 + uTime*0.25)*0.003',
+        '        + cos(position.y*4.5 + uTime*0.2)*0.003',
+        '        + sin(position.z*5.5 + uTime*0.3)*0.003;',
+        'transformed += normal * w * (uDistort + uBurst*0.5);',
+      ].join('\n')
+    );
   };
-
-  const knotGeo1 = new THREE.TorusKnotGeometry(1.0, 0.28, 240, 32);
-  knot1 = new THREE.Mesh(knotGeo1, new THREE.ShaderMaterial({
-    uniforms: uniformDef, vertexShader: vs, fragmentShader: fs,
-    side: THREE.DoubleSide, transparent: true,
-  }));
+  knot1 = new THREE.Mesh(knotGeo, mat);
+  knot1.scale.setScalar(0.85);
   mainGroup.add(knot1);
 
-  const knotGeo2 = new THREE.TorusKnotGeometry(0.35, 0.10, 120, 16);
-  const mat2 = new THREE.ShaderMaterial({
-    uniforms: JSON.parse(JSON.stringify(uniformDef)),
-    vertexShader: vs, fragmentShader: fs,
-    side: THREE.DoubleSide, transparent: true,
-  });
-  mat2.uniforms.uColor1.value = new THREE.Color(0.30, 0.05, 0.10);
-  mat2.uniforms.uColor2.value = new THREE.Color(0.50, 0.10, 0.25);
-  mat2.uniforms.uColor3.value = new THREE.Color(0.35, 0.08, 0.45);
-  mat2.uniforms.uGlowColor.value = new THREE.Color(0.80, 0.25, 0.50);
-  knot2 = new THREE.Mesh(knotGeo2, mat2);
+  const knotGeoSmall = new THREE.TorusKnotGeometry(0.30, 0.09, 128, 20);
+  knot2 = new THREE.Mesh(knotGeoSmall, new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0.60, 0.20, 0.50),
+    metalness: 0.0,
+    roughness: 0.03,
+    transparent: true,
+    transmission: 0.4,
+    thickness: 1.5,
+    clearcoat: 0.25,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 0.8,
+    ior: 1.4,
+    emissive: new THREE.Color(0.40, 0.05, 0.30),
+    emissiveIntensity: 0.05,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  }));
   mainGroup.add(knot2);
 
-  const ringGeo = new THREE.TorusGeometry(1.5, 0.006, 48, 160);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: 0x7755bb, transparent: true, opacity: 0.1,
-  });
-  glowRing = new THREE.Mesh(ringGeo, ringMat);
-  glowRing.rotation.x = 0.3;
+  glowRing = new THREE.Mesh(
+    new THREE.TorusGeometry(1.4, 0.006, 64, 200),
+    new THREE.MeshBasicMaterial({ color: 0x8866cc, transparent: true, opacity: 0.08 })
+  );
+  glowRing.rotation.x = 0.2;
   mainGroup.add(glowRing);
 
-  const ringGeo2 = new THREE.TorusGeometry(1.7, 0.004, 32, 160);
-  const ringMat2 = new THREE.MeshBasicMaterial({
-    color: 0x9966cc, transparent: true, opacity: 0.06,
-  });
-  const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-  ring2.rotation.x = -0.4;
-  ring2.rotation.z = 0.6;
+  const ring2 = new THREE.Mesh(
+    new THREE.TorusGeometry(1.6, 0.004, 32, 200),
+    new THREE.MeshBasicMaterial({ color: 0x7755bb, transparent: true, opacity: 0.04 })
+  );
+  ring2.rotation.x = -0.35;
+  ring2.rotation.z = 0.5;
   mainGroup.add(ring2);
 
   function mkTex() {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 64;
     const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(32,32,0,32,32,32);
-    g.addColorStop(0,'rgba(255,255,255,0.5)');
-    g.addColorStop(0.12,'rgba(210,180,255,0.2)');
-    g.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,64,64);
-    const t = new THREE.CanvasTexture(c); t.needsUpdate = true;
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,0.4)');
+    g.addColorStop(0.15, 'rgba(200,180,255,0.15)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+    const t = new THREE.CanvasTexture(c);
+    t.needsUpdate = true;
     return t;
   }
 
-  const pCount = 400;
+  const pCount = 300;
   const pPos = new Float32Array(pCount * 3);
   const pCol = new Float32Array(pCount * 3);
-  const pSiz = new Float32Array(pCount);
-  particleVel = [];
   for (let i = 0; i < pCount; i++) {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = 1.5 + Math.random() * 4.5;
+    const r = 2.0 + Math.random() * 5.0;
     pPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
-    pPos[i*3+1] = (Math.random() - 0.5) * 5;
+    pPos[i*3+1] = (Math.random() - 0.5) * 6;
     pPos[i*3+2] = r * Math.cos(phi);
-    const c = new THREE.Color(0.3+Math.random()*0.3, 0.08+Math.random()*0.15, 0.4+Math.random()*0.4);
+    const c = new THREE.Color(0.3+Math.random()*0.3, 0.1+Math.random()*0.2, 0.4+Math.random()*0.4);
     pCol[i*3] = c.r; pCol[i*3+1] = c.g; pCol[i*3+2] = c.b;
-    pSiz[i] = 0.006 + Math.random() * 0.025;
-    particleVel.push(new THREE.Vector3(
-      (Math.random()-0.5)*0.003, (Math.random()-0.5)*0.003, (Math.random()-0.5)*0.003
-    ));
   }
   const pGeom = new THREE.BufferGeometry();
   pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
   pGeom.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-  pGeom.setAttribute('size', new THREE.BufferAttribute(pSiz, 1));
   const pMat = new THREE.PointsMaterial({
-    size: 0.018, map: mkTex(), vertexColors: true,
-    transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending,
+    size: 0.015, map: mkTex(), vertexColors: true,
+    transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending,
     depthWrite: false, sizeAttenuation: true,
   });
   particles = new THREE.Points(pGeom, pMat);
@@ -208,109 +166,99 @@ function onResize() {
 function onMouseMove(e) {
   mouseX = (e.clientX / window.innerWidth) * 2 - 1;
   mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-  const zone = e.clientX / window.innerWidth;
-  if (zone < 0.3) mouseZone = 'left';
-  else if (zone > 0.7) mouseZone = 'right';
-  else mouseZone = 'center';
+  const z = e.clientX / window.innerWidth;
+  mouseZone = z < 0.3 ? 'left' : z > 0.7 ? 'right' : 'center';
 }
 
 let prevScrollY = 0;
 function onScroll() {
   const sy = window.scrollY;
   const delta = Math.abs(sy - prevScrollY);
-  if (delta > 2) scrollBoost = delta * 3;
+  if (delta > 2) scrollBoost = Math.min(scrollBoost + delta * 2, 25);
   prevScrollY = sy;
 }
 
 function animate() {
   requestAnimationFrame(animate);
   time += 0.004;
-  scrollBoost *= 0.85;
-  burstPhase *= 0.96;
+  shaderTime += 0.006;
+  scrollBoost *= 0.88;
 
   const s = state.scale, px = state.posX, py = state.posY, pz = state.posZ;
-  mainGroup.scale.setScalar(1 + (s - 1)*0.04);
-  mainGroup.position.x += (px - mainGroup.position.x)*0.04;
-  mainGroup.position.y += (py - mainGroup.position.y)*0.04;
-  mainGroup.position.z += (pz - mainGroup.position.z)*0.04;
+  mainGroup.scale.setScalar(1 + (s - 1)*0.03);
+  mainGroup.position.x += (px - mainGroup.position.x)*0.03;
+  mainGroup.position.y += (py - mainGroup.position.y)*0.03;
+  mainGroup.position.z = -1.5 + (pz - mainGroup.position.z + 1.5)*0.03;
 
-  const boost = Math.min(scrollBoost, 20);
-  const rotBase = 0.003 + boost * 0.004;
-  knot1.rotation.x += rotBase * 0.5;
-  knot1.rotation.y += rotBase + mouseX * 0.0004;
-  knot1.rotation.z += rotBase * 0.15;
+  const boost = Math.min(scrollBoost, 25);
+  const rBase = 0.002 + boost * 0.003;
+  knot1.rotation.x += rBase * 0.4;
+  knot1.rotation.y += rBase + mouseX * 0.0003;
+  knot1.rotation.z += rBase * 0.1;
 
-  const angle = time * 0.3;
-  knot2.position.x = Math.cos(angle) * 1.4;
-  knot2.position.y = Math.sin(angle * 0.7) * 0.5;
-  knot2.position.z = Math.sin(angle) * 1.4;
-  knot2.rotation.x = time * 0.5;
-  knot2.rotation.y = time * 0.7;
+  const ang = time * 0.25;
+  knot2.position.set(
+    Math.cos(ang) * 1.8,
+    Math.sin(ang * 0.7) * 0.6,
+    Math.sin(ang) * 1.8
+  );
+  knot2.rotation.x = time * 0.4;
+  knot2.rotation.y = time * 0.6;
 
-  let zoneVal = 0;
-  if (mouseZone === 'left') zoneVal = -0.6;
-  else if (mouseZone === 'right') zoneVal = 0.6;
-  else zoneVal = 0;
-
-  for (const k of [knot1, knot2]) {
-    if (k.material.uniforms) {
-      const u = k.material.uniforms;
-      u.uTime.value = time;
-      u.uDistortion.value = 1.0 + boost * 0.05 + animTrigger * 0.3;
-      u.uTrigger.value += (animTrigger - u.uTrigger.value) * 0.04;
-      u.uMouseZone.value += (zoneVal - u.uMouseZone.value) * 0.03;
-      u.uBurst.value += (burstPhase - u.uBurst.value) * 0.05;
-    }
+  const distort = Math.min(boost * 0.03, 0.6);
+  if (shaderRef) {
+    shaderRef.uniforms.uTime.value = shaderTime;
+    shaderRef.uniforms.uDistort.value += (distort + animTrigger*0.3 - shaderRef.uniforms.uDistort.value) * 0.05;
+    shaderRef.uniforms.uBurst.value += (animTrigger - shaderRef.uniforms.uBurst.value) * 0.04;
   }
 
-  if (glowRing) {
-    glowRing.rotation.z = time * 0.06 + boost * 0.004;
-    glowRing.material.opacity = 0.1 + boost * 0.008;
-  }
+  const zoneVal = mouseZone === 'left' ? -1 : mouseZone === 'right' ? 1 : 0;
+  knot1.material.emissive.lerp(new THREE.Color(
+    0.28 + zoneVal * 0.08,
+    0.08 + zoneVal * 0.04 + animTrigger * 0.05,
+    0.48 - zoneVal * 0.1 + animTrigger * 0.05
+  ), 0.04);
+  knot1.material.emissiveIntensity += (0.06 + animTrigger * 0.08 - knot1.material.emissiveIntensity) * 0.04;
+  knot1.material.opacity += (0.88 + animTrigger * 0.08 - knot1.material.opacity) * 0.03;
+
+  glowRing.rotation.z = shaderTime * 0.05 + boost * 0.003;
+  glowRing.material.opacity = 0.08 + boost * 0.005 + animTrigger * 0.04;
 
   if (particles) {
     const pos = particles.geometry.attributes.position;
     const arr = pos.array;
-    const mx = mouseX * 3;
-    const my = mouseY * 2;
-    for (let i = 0; i < arr.length / 3; i++) {
-      const v = particleVel[i];
-      const px = arr[i*3], py = arr[i*3+1], pz = arr[i*3+2];
-      const dx = mx - px, dy = my - py;
-      v.x += dx * 0.00001;
-      v.y += dy * 0.00001;
-      v.x *= 0.999; v.y *= 0.999; v.z *= 0.999;
-      arr[i*3] += v.x + burstPhase * (arr[i*3] - mx) * 0.001;
-      arr[i*3+1] += v.y + burstPhase * (arr[i*3+1] - my) * 0.001;
-      arr[i*3+2] += v.z;
-      if (Math.abs(arr[i*3]) > 6) arr[i*3] *= 0.99;
-      if (Math.abs(arr[i*3+1]) > 6) arr[i*3+1] *= 0.99;
-      if (Math.abs(arr[i*3+2]) > 6) arr[i*3+2] *= 0.99;
+    const mx = mouseX * 4, my = mouseY * 3;
+    for (let i = 0; i < 300; i++) {
+      const idx = i * 3;
+      const dx = mx - arr[idx], dy = my - arr[idx+1];
+      arr[idx] += dx * 0.000008 + (Math.random()-0.5)*0.001 + animTrigger * (arr[idx]-mx) * 0.0005;
+      arr[idx+1] += dy * 0.000008 + (Math.random()-0.5)*0.001 + animTrigger * (arr[idx+1]-my) * 0.0005;
+      arr[idx+2] += (Math.random()-0.5)*0.001;
+      for (let a = 0; a < 3; a++) {
+        if (Math.abs(arr[idx+a]) > 7) arr[idx+a] *= 0.98;
+      }
     }
     pos.needsUpdate = true;
-    particles.rotation.y = time * 0.008;
-    particles.material.opacity = 0.15 + animTrigger * 0.15 + boost * 0.004;
+    particles.rotation.y = shaderTime * 0.006;
+    particles.material.opacity = 0.12 + animTrigger * 0.1 + boost * 0.002;
   }
 
-  const cx = mouseX * 0.1 + zoneVal * 0.05;
-  const cy = mouseY * 0.08;
-  camera.position.x += (cx - camera.position.x)*0.02;
-  camera.position.y += (cy - camera.position.y)*0.02;
-  camera.lookAt(mainGroup.position.x, mainGroup.position.y, 0);
+  camera.position.x += (mouseX * 0.08 + zoneVal * 0.03 - camera.position.x) * 0.02;
+  camera.position.y += (mouseY * 0.06 - camera.position.y) * 0.02;
+  camera.lookAt(mainGroup.position.x, mainGroup.position.y, -1.5);
 
   renderer.render(scene, camera);
 }
 
 export function updateScrollProgress(p) {
-  state.scale = 1 - p * 0.35;
-  state.posX = p * 2.0;
-  state.posY = -p * 1.0;
-  state.posZ = -p * 0.4;
+  state.scale = 1 - p * 0.3;
+  state.posX = p * 1.8;
+  state.posY = -p * 0.8;
+  state.posZ = -p * 0.3;
 }
 
 export function setTrigger(v) {
   animTrigger = v;
-  if (v > 0.3 && burstPhase < 0.1) burstPhase = 1;
 }
 
 init();
