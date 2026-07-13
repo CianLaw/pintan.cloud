@@ -22,28 +22,12 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.6;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMappingExposure = 0.7;
 
   scene.add(new THREE.AmbientLight(0x556688, 0.3));
 
   const key = new THREE.DirectionalLight(0xffffff, 2.5);
   key.position.set(5, 6, 8);
-  key.castShadow = true;
-  key.shadow.mapSize.width = 2048;
-  key.shadow.mapSize.height = 2048;
-  key.shadow.bias = -0.0005;
-  key.shadow.normalBias = 0.02;
-  key.shadow.camera.near = 1;
-  key.shadow.camera.far = 15;
-  {
-    const d = 6;
-    key.shadow.camera.left = -d;
-    key.shadow.camera.right = d;
-    key.shadow.camera.top = d;
-    key.shadow.camera.bottom = -d;
-  }
   scene.add(key);
 
   const fill = new THREE.DirectionalLight(0x9977bb, 0.8);
@@ -58,18 +42,14 @@ function init() {
   mainGroup.position.z = 0;
   scene.add(mainGroup);
 
-  const knotGeo = new THREE.TorusKnotGeometry(1.0, 0.28, 320, 48);
-  const mat = new THREE.MeshPhysicalMaterial({
+  const knotGeo = new THREE.TorusKnotGeometry(1.0, 0.28, 300, 44);
+  const mat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0.50, 0.30, 0.70),
-    metalness: 0.05,
-    roughness: 0.0,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.0,
-    envMapIntensity: 1.5,
-    emissive: new THREE.Color(0.28, 0.08, 0.48),
-    emissiveIntensity: 0.15,
+    metalness: 0.35,
+    roughness: 0.08,
+    emissive: new THREE.Color(0.30, 0.10, 0.50),
+    emissiveIntensity: 0.18,
     side: THREE.DoubleSide,
-    depthWrite: true,
   });
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = { value: 0 };
@@ -89,34 +69,28 @@ function init() {
   };
   knot1 = new THREE.Mesh(knotGeo, mat);
   knot1.scale.setScalar(1.05);
-  knot1.castShadow = true;
-  knot1.receiveShadow = true;
   mainGroup.add(knot1);
 
-  const knotGeoSmall = new THREE.TorusKnotGeometry(0.30, 0.09, 128, 20);
-  knot2 = new THREE.Mesh(knotGeoSmall, new THREE.MeshPhysicalMaterial({
+  const knotGeoSmall = new THREE.TorusKnotGeometry(0.30, 0.09, 100, 18);
+  knot2 = new THREE.Mesh(knotGeoSmall, new THREE.MeshStandardMaterial({
     color: new THREE.Color(0.60, 0.20, 0.50),
-    metalness: 0.05,
-    roughness: 0.0,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.0,
-    envMapIntensity: 1.2,
+    metalness: 0.3,
+    roughness: 0.1,
     emissive: new THREE.Color(0.40, 0.05, 0.30),
     emissiveIntensity: 0.12,
     side: THREE.DoubleSide,
-    depthWrite: true,
   }));
   mainGroup.add(knot2);
 
   glowRing = new THREE.Mesh(
-    new THREE.TorusGeometry(1.4, 0.006, 64, 200),
-    new THREE.MeshBasicMaterial({ color: 0x8866cc, transparent: true, opacity: 0.08 })
+    new THREE.TorusGeometry(1.3, 0.008, 48, 160),
+    new THREE.MeshBasicMaterial({ color: 0x8866cc, transparent: true, opacity: 0.06 })
   );
-  glowRing.rotation.x = 0.2;
+  glowRing.rotation.x = 0.25;
   mainGroup.add(glowRing);
 
   const ring2 = new THREE.Mesh(
-    new THREE.TorusGeometry(1.8, 0.004, 32, 200),
+    new THREE.TorusGeometry(1.7, 0.006, 32, 160),
     new THREE.MeshBasicMaterial({ color: 0x7755bb, transparent: true, opacity: 0.04 })
   );
   ring2.rotation.x = -0.35;
