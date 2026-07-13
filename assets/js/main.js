@@ -54,9 +54,19 @@ function smoothScroll() {
 function initNavScroll() {
   let lastScroll = 0;
   const nav = document.querySelector('.nav');
+  const overlay = document.getElementById('three-overlay');
+  const canvas = document.getElementById('three-canvas');
 
   window.addEventListener('scroll', () => {
     const currentScroll = window.scrollY;
+    const vh = window.innerHeight;
+
+    if (overlay) {
+      const pct = Math.min(currentScroll / vh, 1);
+      overlay.style.opacity = pct;
+      if (canvas) canvas.style.opacity = Math.max(0, 1 - pct * 2);
+    }
+
     if (currentScroll > lastScroll && currentScroll > 100) {
       nav.style.top = '-80px';
     } else {
