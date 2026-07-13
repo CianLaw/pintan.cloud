@@ -15,19 +15,35 @@ function init() {
 
   scene = new THREE.Scene();
 
-  camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 0.15, 8);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0.15, 6);
 
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.6;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   scene.add(new THREE.AmbientLight(0x556688, 0.3));
 
   const key = new THREE.DirectionalLight(0xffffff, 2.5);
   key.position.set(5, 6, 8);
+  key.castShadow = true;
+  key.shadow.mapSize.width = 2048;
+  key.shadow.mapSize.height = 2048;
+  key.shadow.bias = -0.0005;
+  key.shadow.normalBias = 0.02;
+  key.shadow.camera.near = 1;
+  key.shadow.camera.far = 15;
+  {
+    const d = 6;
+    key.shadow.camera.left = -d;
+    key.shadow.camera.right = d;
+    key.shadow.camera.top = d;
+    key.shadow.camera.bottom = -d;
+  }
   scene.add(key);
 
   const fill = new THREE.DirectionalLight(0x9977bb, 0.8);
@@ -39,25 +55,21 @@ function init() {
   scene.add(rim);
 
   mainGroup = new THREE.Group();
-  mainGroup.position.z = -1.5;
+  mainGroup.position.z = 0;
   scene.add(mainGroup);
 
-  const knotGeo = new THREE.TorusKnotGeometry(1.0, 0.28, 280, 40);
+  const knotGeo = new THREE.TorusKnotGeometry(1.0, 0.28, 320, 48);
   const mat = new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(0.50, 0.30, 0.70),
-    metalness: 0.0,
-    roughness: 0.02,
-    transparent: true,
-    transmission: 0.55,
-    thickness: 2.5,
-    clearcoat: 0.35,
-    clearcoatRoughness: 0.04,
-    envMapIntensity: 1.2,
-    ior: 1.5,
+    metalness: 0.05,
+    roughness: 0.0,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.0,
+    envMapIntensity: 1.5,
     emissive: new THREE.Color(0.28, 0.08, 0.48),
-    emissiveIntensity: 0.06,
+    emissiveIntensity: 0.15,
     side: THREE.DoubleSide,
-    depthWrite: false,
+    depthWrite: true,
   });
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = { value: 0 };
@@ -76,25 +88,23 @@ function init() {
     );
   };
   knot1 = new THREE.Mesh(knotGeo, mat);
-  knot1.scale.setScalar(0.85);
+  knot1.scale.setScalar(1.05);
+  knot1.castShadow = true;
+  knot1.receiveShadow = true;
   mainGroup.add(knot1);
 
   const knotGeoSmall = new THREE.TorusKnotGeometry(0.30, 0.09, 128, 20);
   knot2 = new THREE.Mesh(knotGeoSmall, new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(0.60, 0.20, 0.50),
-    metalness: 0.0,
-    roughness: 0.03,
-    transparent: true,
-    transmission: 0.4,
-    thickness: 1.5,
-    clearcoat: 0.25,
-    clearcoatRoughness: 0.05,
-    envMapIntensity: 0.8,
-    ior: 1.4,
+    metalness: 0.05,
+    roughness: 0.0,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.0,
+    envMapIntensity: 1.2,
     emissive: new THREE.Color(0.40, 0.05, 0.30),
-    emissiveIntensity: 0.05,
+    emissiveIntensity: 0.12,
     side: THREE.DoubleSide,
-    depthWrite: false,
+    depthWrite: true,
   }));
   mainGroup.add(knot2);
 
@@ -106,7 +116,7 @@ function init() {
   mainGroup.add(glowRing);
 
   const ring2 = new THREE.Mesh(
-    new THREE.TorusGeometry(1.6, 0.004, 32, 200),
+    new THREE.TorusGeometry(1.8, 0.004, 32, 200),
     new THREE.MeshBasicMaterial({ color: 0x7755bb, transparent: true, opacity: 0.04 })
   );
   ring2.rotation.x = -0.35;
@@ -188,7 +198,7 @@ function animate() {
   mainGroup.scale.setScalar(1 + (s - 1)*0.03);
   mainGroup.position.x += (px - mainGroup.position.x)*0.03;
   mainGroup.position.y += (py - mainGroup.position.y)*0.03;
-  mainGroup.position.z = -1.5 + (pz - mainGroup.position.z + 1.5)*0.03;
+  mainGroup.position.z += (pz - mainGroup.position.z)*0.03;
 
   const boost = Math.min(scrollBoost, 25);
   const rBase = 0.002 + boost * 0.003;
@@ -198,9 +208,9 @@ function animate() {
 
   const ang = time * 0.25;
   knot2.position.set(
-    Math.cos(ang) * 1.8,
-    Math.sin(ang * 0.7) * 0.6,
-    Math.sin(ang) * 1.8
+    Math.cos(ang) * 2.8,
+    Math.sin(ang * 0.7) * 0.8,
+    Math.sin(ang) * 2.8
   );
   knot2.rotation.x = time * 0.4;
   knot2.rotation.y = time * 0.6;
@@ -245,7 +255,7 @@ function animate() {
 
   camera.position.x += (mouseX * 0.08 + zoneVal * 0.03 - camera.position.x) * 0.02;
   camera.position.y += (mouseY * 0.06 - camera.position.y) * 0.02;
-  camera.lookAt(mainGroup.position.x, mainGroup.position.y, -1.5);
+  camera.lookAt(mainGroup.position.x, mainGroup.position.y, 0);
 
   renderer.render(scene, camera);
 }
