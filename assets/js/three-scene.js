@@ -6,8 +6,7 @@ let mouseX = 0, mouseY = 0, mouseZone = 'center';
 let scrollBoost = 0;
 let state = { scale: 1, posX: 0, posY: 0, posZ: 0 };
 let animTrigger = 0;
-let time = 0, shaderTime = 0;
-let shaderRef = null;
+let time = 0;
 
 function init() {
   const canvas = document.getElementById('three-canvas');
@@ -51,22 +50,6 @@ function init() {
     emissiveIntensity: 0.18,
     side: THREE.DoubleSide,
   });
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uTime = { value: 0 };
-    shader.uniforms.uDistort = { value: 0 };
-    shader.uniforms.uBurst = { value: 0 };
-    shaderRef = shader;
-    shader.vertexShader = shader.vertexShader.replace(
-      '#include <begin_vertex>',
-      [
-        '#include <begin_vertex>',
-        'float w = sin(position.x*3.5 + uTime*0.25)*0.003',
-        '        + cos(position.y*4.5 + uTime*0.2)*0.003',
-        '        + sin(position.z*5.5 + uTime*0.3)*0.003;',
-        'transformed += normal * w * (uDistort + uBurst*0.5);',
-      ].join('\n')
-    );
-  };
   knot1 = new THREE.Mesh(knotGeo, mat);
   knot1.scale.setScalar(1.05);
   mainGroup.add(knot1);
@@ -165,7 +148,6 @@ function onScroll() {
 function animate() {
   requestAnimationFrame(animate);
   time += 0.004;
-  shaderTime += 0.006;
   scrollBoost *= 0.88;
 
   const s = state.scale, px = state.posX, py = state.posY, pz = state.posZ;
@@ -189,13 +171,6 @@ function animate() {
   knot2.rotation.x = time * 0.4;
   knot2.rotation.y = time * 0.6;
 
-  const distort = Math.min(boost * 0.03, 0.6);
-  if (shaderRef) {
-    shaderRef.uniforms.uTime.value = shaderTime;
-    shaderRef.uniforms.uDistort.value += (distort + animTrigger*0.3 - shaderRef.uniforms.uDistort.value) * 0.05;
-    shaderRef.uniforms.uBurst.value += (animTrigger - shaderRef.uniforms.uBurst.value) * 0.04;
-  }
-
   const zoneVal = mouseZone === 'left' ? -1 : mouseZone === 'right' ? 1 : 0;
   knot1.material.emissive.lerp(new THREE.Color(
     0.28 + zoneVal * 0.08,
@@ -205,7 +180,7 @@ function animate() {
   knot1.material.emissiveIntensity += (0.06 + animTrigger * 0.08 - knot1.material.emissiveIntensity) * 0.04;
   knot1.material.opacity += (0.88 + animTrigger * 0.08 - knot1.material.opacity) * 0.03;
 
-  glowRing.rotation.z = shaderTime * 0.05 + boost * 0.003;
+  glowRing.rotation.z = time * 0.05 + boost * 0.003;
   glowRing.material.opacity = 0.08 + boost * 0.005 + animTrigger * 0.04;
 
   if (particles) {
@@ -223,7 +198,7 @@ function animate() {
       }
     }
     pos.needsUpdate = true;
-    particles.rotation.y = shaderTime * 0.006;
+    particles.rotation.y = time * 0.006;
     particles.material.opacity = 0.12 + animTrigger * 0.1 + boost * 0.002;
   }
 
