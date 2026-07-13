@@ -172,6 +172,67 @@ img {
   50% { transform: translateY(4px); opacity: 1; }
 }
 
+.side-deco {
+  position: fixed;
+  top: 0;
+  width: 1px;
+  height: 100vh;
+  z-index: 998;
+  pointer-events: none;
+}
+.side-deco.left {
+  left: 48px;
+  background: linear-gradient(to bottom, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
+}
+.side-deco.right {
+  right: 48px;
+  background: linear-gradient(to bottom, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
+}
+.side-deco .deco-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.25;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.side-deco .deco-label {
+  position: absolute;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  writing-mode: vertical-rl;
+  opacity: 0.3;
+}
+.side-deco.left .deco-label {
+  left: 12px;
+}
+.side-deco.right .deco-label {
+  right: 12px;
+}
+
+.corner-tl, .corner-br {
+  position: fixed;
+  width: 24px;
+  height: 24px;
+  z-index: 998;
+  pointer-events: none;
+}
+.corner-tl {
+  top: 80px;
+  left: 24px;
+  border-top: 1px solid var(--border-strong);
+  border-left: 1px solid var(--border-strong);
+}
+.corner-br {
+  bottom: 24px;
+  right: 24px;
+  border-bottom: 1px solid var(--border-strong);
+  border-right: 1px solid var(--border-strong);
+}
+
 .nav {
   position: fixed;
   top: 16px;

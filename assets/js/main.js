@@ -1,4 +1,4 @@
-import { updateScrollProgress } from './three-scene.js';
+import { updateScrollProgress, setTrigger } from './three-scene.js';
 
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
@@ -69,6 +69,20 @@ sectionElements.forEach(section => {
     overwrite: 'auto',
   });
 });
+
+const workSection = document.getElementById('work');
+if (workSection) {
+  ScrollTrigger.create({
+    trigger: workSection,
+    start: 'top center',
+    end: 'center center',
+    onUpdate: self => {
+      setTrigger(Math.min(self.progress * 2, 1));
+    },
+    onLeave: () => setTrigger(1),
+    onEnterBack: () => {},
+  });
+}
 
 window.addEventListener('scroll', () => {
   const currentScroll = window.scrollY;
