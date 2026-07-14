@@ -1,156 +1,161 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-console.log('[three-scene] Loading GLB ceramic sphere model...');
+console.log('[three-scene] Cracked planet shader...');
 
 gsap.registerPlugin(ScrollTrigger);
 
 const canvas = document.querySelector('#three-canvas');
-const scene = new THREE.Scene();
-
 const W = window.innerWidth, H = window.innerHeight;
 const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 100);
-camera.position.set(0, 0.1, 7.5);
+camera.position.set(0, 0.1, 8);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
 renderer.setSize(W, H);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 4));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
+renderer.setClearColor(0x000000, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.8;
+renderer.toneMappingExposure = 0.7;
 
+const scene = new THREE.Scene();
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.45, 0.2, 0.25);
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.9, 0.35, 0.12);
 composer.addPass(bloom);
 
 // ======== Star Field ========
-const sPos = new Float32Array(3000 * 3);
-for (let i = 0; i < 3000; i++) {
-  const theta = Math.random() * Math.PI * 2;
-  const phi = Math.acos(2 * Math.random() - 1);
-  const r = 10 + Math.random() * 25;
-  sPos[i*3] = Math.sin(phi) * Math.cos(theta) * r;
-  sPos[i*3+1] = Math.sin(phi) * Math.sin(theta) * r;
-  sPos[i*3+2] = Math.cos(phi) * r;
-}
-const sGeo = new THREE.BufferGeometry();
-sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-const sMat = new THREE.PointsMaterial({
-  size: 0.035, sizeAttenuation: true, transparent: true,
-  opacity: 0.3, color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false,
-});
-const stars = new THREE.Points(sGeo, sMat);
-scene.add(stars);
-
-// ======== Lighting (matched to GLB model) ========
-const ambient = new THREE.AmbientLight(0x333344, 0.3);
-scene.add(ambient);
-const dirLight = new THREE.DirectionalLight(0xfff5ee, 1.2);
-dirLight.position.set(5, 2, 3);
-scene.add(dirLight);
-const fillLight = new THREE.DirectionalLight(0xe8e0d8, 0.4);
-fillLight.position.set(-3, -1, 2);
-scene.add(fillLight);
-
-// GLB model container
-const modelGroup = new THREE.Group();
-scene.add(modelGroup);
-
-// Crystal glow lights
-const crystalLight1 = new THREE.PointLight(0x3a1c7a, 0.6, 5);
-crystalLight1.position.set(0, 0.3, 0);
-scene.add(crystalLight1);
-const crystalLight2 = new THREE.PointLight(0x22ddcc, 0.3, 4);
-crystalLight2.position.set(0.5, -0.2, 0.5);
-scene.add(crystalLight2);
-
-// ======== Load GLB Model ========
-const loader = new GLTFLoader();
-let modelLoaded = false;
-
-loader.load(
-  'assets/models/ceramic-cracked-sphere.glb',
-  (gltf) => {
-    const root = gltf.scene;
-    root.traverse((child) => {
-      if (child.isMesh) {
-        child.material.transparent = true;
-        child.material.opacity = 0.95;
-        child.material.roughness = 0.2;
-        child.material.envMapIntensity = 0.3;
-      }
-    });
-    modelGroup.add(root);
-    modelLoaded = true;
-    console.log('[three-scene] GLB model loaded');
-  },
-  (xhr) => {
-    if (xhr.lengthComputable && xhr.total > 0) {
-      const pct = Math.round((xhr.loaded / xhr.total) * 100);
-      if (pct % 50 === 0 || pct === 100) console.log(`[three-scene] Loading model: ${pct}%`);
-    }
-  },
-  (err) => {
-    console.error('[three-scene] GLB load error:', err);
+(function() {
+  const N = 4000; const p = new Float32Array(N*3);
+  for (let i = 0; i < N; i++) {
+    const t = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1), r = 12+Math.random()*30;
+    p[i*3]=Math.sin(ph)*Math.cos(t)*r; p[i*3+1]=Math.sin(ph)*Math.sin(t)*r; p[i*3+2]=Math.cos(ph)*r;
   }
-);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const m = new THREE.PointsMaterial({size:.03,sizeAttenuation:true,transparent:true,opacity:.3,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false});
+  scene.add(new THREE.Points(g, m));
+})();
 
-// ======== Resize ========
+// ======== Cracked Planet ========
+const planetMat = new THREE.ShaderMaterial({
+  uniforms: { uTime: { value: 0 }, uGlow: { value: 1.2 } },
+  vertexShader: `
+    varying vec3 vN; varying vec3 vP; varying vec3 vV; varying float vD;
+    float h(vec3 p) { p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+    float n(vec3 p) {
+      vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+      return mix(mix(mix(h(i+vec3(0,0,0)),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);
+    }
+    float f(vec3 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.;a*=.5;}return v;}
+    float vo(vec3 p) {
+      vec3 i=floor(p),fr=fract(p);float md=1.;
+      for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++){vec3 c=vec3(float(x),float(y),float(z));md=min(md,length(fr-(c+h(i+c))));}
+      return md;
+    }
+    float cr(vec3 p){
+      float c1=1.-smoothstep(0.,.18,vo(p*5.));
+      float c2=(1.-smoothstep(0.,.07,vo(p*10.+30.)))*.4;
+      float c3=(1.-smoothstep(0.,.28,vo(p*2.5+15.)))*.2;
+      return smoothstep(.12,.55,max(max(c1,c2),c3)*(.5+f(p*8.+50.)*.5));
+    }
+    void main() {
+      vec3 p=position;float crack=cr(p),ter=f(p*2.5);float d=crack*.055+ter*.006;
+      vec3 dp=p-normal*d;
+      vN=normalize(normalMatrix*normal);vP=dp;vD=d;
+      vec4 mv=modelViewMatrix*vec4(dp,1.);vV=normalize(-mv.xyz);
+      gl_Position=projectionMatrix*mv;
+    }
+  `,
+  fragmentShader: `
+    uniform float uTime; uniform float uGlow;
+    varying vec3 vN; varying vec3 vP; varying vec3 vV; varying float vD;
+    float h(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+    float n(vec3 p) {
+      vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+      return mix(mix(mix(h(i+vec3(0,0,0)),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);
+    }
+    float f(vec3 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.;a*=.5;}return v;}
+    float vo(vec3 p){
+      vec3 i=floor(p),fr=fract(p);float md=1.;
+      for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++){vec3 c=vec3(float(x),float(y),float(z));md=min(md,length(fr-(c+h(i+c))));}
+      return md;
+    }
+    float cr(vec3 p){
+      float c1=1.-smoothstep(0.,.18,vo(p*5.));
+      float c2=(1.-smoothstep(0.,.07,vo(p*10.+30.)))*.4;
+      float c3=(1.-smoothstep(0.,.28,vo(p*2.5+15.)))*.2;
+      return smoothstep(.12,.55,max(max(c1,c2),c3)*(.5+f(p*8.+50.)*.5));
+    }
+    vec3 rb(float t){return vec3(sin(t*6.283)*.5+.5,sin(t*6.283+2.094)*.5+.5,sin(t*6.283+4.189)*.5+.5);}
+    void main() {
+      vec3 N=normalize(vN),V=normalize(vV),P=vP;
+      float crack=cr(P),ter=f(P*2.5);
+      vec3 c1=vec3(.30,.26,.22),c2=vec3(.20,.17,.14),c3=vec3(.13,.11,.09);
+      vec3 col=mix(c1,c2,ter);col=mix(col,c3,smoothstep(.3,.7,f(P*5.+10.))*.4);
+      col+=(f(P*12.+100.)-.5)*.03;
+
+      float phase=dot(P,vec3(.4,.3,.6))+uTime*.06;
+      vec3 glow=rb(phase)*crack*uGlow*(sin(uTime*.3+crack*3.)*.15+.85);
+      glow+=rb(phase+.5)*smoothstep(0.,.12,vD)*crack*.25;
+
+      col=mix(col,glow,crack*.85);col+=glow*.5;
+
+      vec3 L=normalize(vec3(2.,1.,3.));
+      float diff=max(dot(N,L),0.)*.5+.5;
+      col*=.3+diff*.7;
+
+      float ws=sin(dot(P,vec3(1.,.5,.3))*30.+crack*5.)*.5+.5;
+      col-=crack*.12*(1.-ws);
+
+      float fr=pow(1.-max(dot(N,V),0.),3.);
+      col+=vec3(.12,.08,.2)*fr*.35;
+      col+=vec3(.25,.15,.4)*pow(1.-max(dot(N,V),0.),5.)*.06;
+
+      gl_FragColor=vec4(col,1.);
+    }
+  `,
+  side: THREE.DoubleSide,
+});
+
+const planet = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), planetMat);
+scene.add(planet);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x222233, 0.3));
+const dl = new THREE.DirectionalLight(0xfff5ee, 1.5); dl.position.set(3,2,4); scene.add(dl);
+const rl = new THREE.DirectionalLight(0x443366, 0.6); rl.position.set(-2,-1,-3); scene.add(rl);
+
+// ======== Interaction ========
 window.addEventListener('resize', () => {
   const w = window.innerWidth, h = window.innerHeight;
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w, h);
-  composer.setSize(w, h);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w,h); composer.setSize(w,h);
 });
 
-// ======== Mouse Parallax ========
-let mx = 0, my = 0, tx = 0, ty = 0;
-window.addEventListener('mousemove', (e) => {
-  mx = (e.clientX / window.innerWidth - 0.5) * 2;
-  my = (e.clientY / window.innerHeight - 0.5) * 2;
-});
+let mx=0,my=0,tx=0,ty=0;
+window.addEventListener('mousemove', e => { mx=(e.clientX/W-.5)*2; my=(e.clientY/H-.5)*2; });
 
-// ======== Scroll → Rotation ========
 const state = { rot: 0 };
-gsap.timeline({
-  scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.2 },
-})
-.to(state, { rot: Math.PI * 2, ease: 'none' }, 0);
+gsap.timeline({scrollTrigger:{trigger:'body',start:'top top',end:'bottom bottom',scrub:1.2}})
+  .to(state, { rot: Math.PI * 3, ease: 'none' }, 0);
 
-// ======== Animation Loop ========
 const clock = new THREE.Clock();
-
 function tick() {
   const t = clock.getElapsedTime();
-
-  tx += (mx - tx) * 0.04;
-  ty += (my - ty) * 0.04;
-
-  if (modelLoaded) {
-    modelGroup.rotation.y += (state.rot - modelGroup.rotation.y) * 0.03;
-    modelGroup.rotation.x = ty * 0.04;
-  }
-
-  crystalLight1.intensity = 0.5 + Math.sin(t * 0.5) * 0.25;
-  crystalLight2.intensity = 0.25 + Math.sin(t * 0.7 + 1.0) * 0.15;
-
-  stars.rotation.y = t * 0.003;
-  stars.rotation.x = Math.sin(t * 0.002) * 0.008;
-
+  tx += (mx-tx)*.04; ty += (my-ty)*.04;
+  planet.rotation.y += (state.rot - planet.rotation.y)*.03;
+  planet.rotation.x = ty*.04;
+  planetMat.uniforms.uTime.value = t;
+  scene.children.forEach(c => { if(c.isPoints) { c.rotation.y=t*.003; c.rotation.x=Math.sin(t*.002)*.008; } });
   composer.render();
   requestAnimationFrame(tick);
 }
 tick();
 
-// ======== Exports ========
 export function updateScrollProgress(p) {}
-
 export function setTrigger(v) {
-  bloom.strength = 0.45 + v * 0.35;
-  crystalLight1.intensity = 0.6 + v * 0.5;
+  planetMat.uniforms.uGlow.value = 1.2 + v * .6;
+  bloom.strength = .9 + v * .4;
 }
