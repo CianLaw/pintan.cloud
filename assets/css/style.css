@@ -9,15 +9,15 @@
   --bg: #faf7f2;
   --bg-alt: #f5f0ea;
   --bg-card: #fff;
-  --text: #1a1a1a;
-  --text-secondary: #6b6560;
-  --text-muted: #9c948c;
+  --text: #d4d0cb;
+  --text-secondary: #a8a4a0;
+  --text-muted: #8c8884;
   --border: rgba(0,0,0,0.06);
   --border-strong: rgba(0,0,0,0.1);
   --accent: #c4956a;
   --accent-light: #e8d5c0;
-  --font-display: 'BDO Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'SF Pro Rounded', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'SF Pro Rounded', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 *, *::before, *::after {
@@ -381,14 +381,14 @@ img {
   max-width: 1280px;
   margin: 0 auto;
   width: 100%;
-  text-shadow: 0 0 60px rgba(250,247,242,0.7), 0 0 120px rgba(250,247,242,0.4);
+  text-shadow: 0 0 40px rgba(212,208,203,0.5), 0 2px 20px rgba(0,0,0,0.8);
 }
 
 .hero-tag {
   font-family: var(--font-display);
   font-size: 13px;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: #9c948c;
   margin-bottom: 24px;
 }
 
@@ -400,6 +400,7 @@ img {
   line-height: 0.95;
   margin-bottom: 40px;
   max-width: 900px;
+  color: #d4d0cb;
 }
 
 .hero-actions {
