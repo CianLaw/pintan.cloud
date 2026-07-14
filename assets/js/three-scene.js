@@ -166,8 +166,8 @@ function onMouseMove(e) {
 
   raycaster.setFromCamera(mouseOnScreen, camera);
   const pt = new THREE.Vector3();
-  raycaster.ray.intersectSphere(new THREE.Sphere(new THREE.Vector3(particleSystem.position.x, particleSystem.position.y, particleSystem.position.z), 4), pt);
-  if (pt) { mouse.copy(pt); } else { mouse.set(999, 999, 999); }
+  const hit = raycaster.ray.intersectSphere(new THREE.Sphere(new THREE.Vector3(particleSystem.position.x, particleSystem.position.y, particleSystem.position.z), 4), pt);
+  if (hit) { mouse.copy(pt); } else { mouse.set(999, 999, 999); }
 }
 
 let prevScrollY = 0, scrollVel = 0;
@@ -209,16 +209,18 @@ function animate() {
   const smoothRot = scrollPos;
 
   // ---- Particle wave animation ----
+  const invMat = new THREE.Matrix4().copy(particleSystem.matrixWorld).invert();
+  const localMouse = mouse.clone().applyMatrix4(invMat);
   for (let i = 0; i < PARTICLE_COUNT; i++) {
     const i3 = i * 3;
     const ox = origPos[i3], oy = origPos[i3+1], oz = origPos[i3+2];
     const wave = 0.02 * Math.sin(ox * 2 + time * 0.6) * Math.cos(oz * 1.5 + time * 0.5);
     const wave2 = 0.015 * Math.sin(oy * 3 + time * 0.8);
 
-    // Mouse repulsion
-    const dx = (ox + particleSystem.position.x) - mouse.x;
-    const dy = (oy + particleSystem.position.y) - mouse.y;
-    const dz = (oz + particleSystem.position.z) - mouse.z;
+    // Mouse repulsion (local space)
+    const dx = ox - localMouse.x;
+    const dy = oy - localMouse.y;
+    const dz = oz - localMouse.z;
     const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
     let repX = 0, repY = 0, repZ = 0;
     if (dist < 1.5 && dist > 0.01) {
