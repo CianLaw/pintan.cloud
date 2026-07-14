@@ -42,78 +42,155 @@ composer.addPass(bloom);
 const planetMat = new THREE.ShaderMaterial({
   uniforms: { uTime: { value: 0 }, uGlow: { value: 1.2 } },
   vertexShader: `
-    varying vec3 vN; varying vec3 vP; varying vec3 vV; varying float vD;
+    varying vec3 vN; varying vec3 vP; varying vec3 vV; varying float vD; varying float vCrack;
     float h(vec3 p) { p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
     float n(vec3 p) {
       vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
       return mix(mix(mix(h(i+vec3(0,0,0)),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);
     }
-    float f(vec3 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.;a*=.5;}return v;}
-    float vo(vec3 p) {
+    float fbm(vec3 p){float v=0.,a=.5;for(int i=0;i<6;i++){v+=a*n(p);p*=2.1;a*=.48;}return v;}
+    float voronoi(vec3 p) {
       vec3 i=floor(p),fr=fract(p);float md=1.;
       for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++){vec3 c=vec3(float(x),float(y),float(z));md=min(md,length(fr-(c+h(i+c))));}
       return md;
     }
-    float cr(vec3 p){
-      float c1=1.-smoothstep(0.,.18,vo(p*5.));
-      float c2=(1.-smoothstep(0.,.07,vo(p*10.+30.)))*.4;
-      float c3=(1.-smoothstep(0.,.28,vo(p*2.5+15.)))*.2;
-      return smoothstep(.12,.55,max(max(c1,c2),c3)*(.5+f(p*8.+50.)*.5));
+    float crackMap(vec3 p) {
+      // Layer 1: massive tectonic fractures (large cells)
+      float vo1 = voronoi(p * 1.8 + vec3(7.3, 3.1, 2.5));
+      float c1 = 1.0 - smoothstep(0.0, 0.35, vo1);
+      // Layer 2: medium fracture network
+      float vo2 = voronoi(p * 4.5 + vec3(11.7, 5.3, 8.9));
+      float c2 = (1.0 - smoothstep(0.0, 0.12, vo2)) * 0.6;
+      // Layer 3: fine crack web
+      float vo3 = voronoi(p * 12.0 + vec3(3.7, 9.1, 14.2));
+      float c3 = (1.0 - smoothstep(0.0, 0.04, vo3)) * 0.35;
+      // Combine with noise perturbation
+      float np = fbm(p * 6.0 + 20.0);
+      float crack = max(max(c1, c2), c3) * (0.4 + np * 0.6);
+      return smoothstep(0.1, 0.7, crack);
     }
     void main() {
-      vec3 p=position;float crack=cr(p),ter=f(p*2.5);float d=crack*.055+ter*.006;
-      vec3 dp=p-normal*d;
-      vN=normalize(normalMatrix*normal);vP=dp;vD=d;
-      vec4 mv=modelViewMatrix*vec4(dp,1.);vV=normalize(-mv.xyz);
-      gl_Position=projectionMatrix*mv;
+      vec3 p = position;
+      float crack = crackMap(p);
+      float terrain = fbm(p * 3.0);
+      float crater = 1.0 - smoothstep(0.35, 0.65, fbm(p * 8.0 + 50.0));
+      // Deep displacement along cracks (up to 0.12 units)
+      float disp = crack * 0.10 + terrain * 0.015 - crater * 0.04;
+      vec3 dp = p - normal * disp;
+      vN = normalize(normalMatrix * normal);
+      vP = dp;
+      vD = disp;
+      vCrack = crack;
+      vec4 mv = modelViewMatrix * vec4(dp, 1.0);
+      vV = normalize(-mv.xyz);
+      gl_Position = projectionMatrix * mv;
     }
   `,
   fragmentShader: `
     uniform float uTime; uniform float uGlow;
-    varying vec3 vN; varying vec3 vP; varying vec3 vV; varying float vD;
-    float h(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+    varying vec3 vN; varying vec3 vP; varying vec3 vV; varying float vD; varying float vCrack;
+    float h(vec3 p) { p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
     float n(vec3 p) {
       vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
       return mix(mix(mix(h(i+vec3(0,0,0)),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);
     }
-    float f(vec3 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.;a*=.5;}return v;}
-    float vo(vec3 p){
+    float fbm(vec3 p){float v=0.,a=.5;for(int i=0;i<6;i++){v+=a*n(p);p*=2.1;a*=.48;}return v;}
+    float voronoi(vec3 p) {
       vec3 i=floor(p),fr=fract(p);float md=1.;
       for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++){vec3 c=vec3(float(x),float(y),float(z));md=min(md,length(fr-(c+h(i+c))));}
       return md;
     }
-    float cr(vec3 p){
-      float c1=1.-smoothstep(0.,.18,vo(p*5.));
-      float c2=(1.-smoothstep(0.,.07,vo(p*10.+30.)))*.4;
-      float c3=(1.-smoothstep(0.,.28,vo(p*2.5+15.)))*.2;
-      return smoothstep(.12,.55,max(max(c1,c2),c3)*(.5+f(p*8.+50.)*.5));
+    float crackMap(vec3 p) {
+      float vo1 = voronoi(p * 1.8 + vec3(7.3, 3.1, 2.5));
+      float c1 = 1.0 - smoothstep(0.0, 0.35, vo1);
+      float vo2 = voronoi(p * 4.5 + vec3(11.7, 5.3, 8.9));
+      float c2 = (1.0 - smoothstep(0.0, 0.12, vo2)) * 0.6;
+      float vo3 = voronoi(p * 12.0 + vec3(3.7, 9.1, 14.2));
+      float c3 = (1.0 - smoothstep(0.0, 0.04, vo3)) * 0.35;
+      float np = fbm(p * 6.0 + 20.0);
+      float crack = max(max(c1, c2), c3) * (0.4 + np * 0.6);
+      return smoothstep(0.1, 0.7, crack);
     }
-    vec3 rb(float t){return vec3(sin(t*6.283)*.5+.5,sin(t*6.283+2.094)*.5+.5,sin(t*6.283+4.189)*.5+.5);}
+    // HSL to RGB for proper rainbow colors
+    vec3 hsl2rgb(float h, float s, float l) {
+      vec3 rgb = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+      return l + s * (rgb - 0.5) * (1.0 - abs(2.0 * l - 1.0));
+    }
     void main() {
-      vec3 N=normalize(vN),V=normalize(vV),P=vP;
-      float crack=cr(P),ter=f(P*2.5);
-      vec3 c1=vec3(.30,.26,.22),c2=vec3(.20,.17,.14),c3=vec3(.13,.11,.09);
-      vec3 col=mix(c1,c2,ter);col=mix(col,c3,smoothstep(.3,.7,f(P*5.+10.))*.4);
-      col+=(f(P*12.+100.)-.5)*.03;
+      vec3 N = normalize(vN), V = normalize(vV), P = vP;
+      float crack = crackMap(P);
 
-      float phase=dot(P,vec3(.4,.3,.6))+uTime*.06;
-      vec3 glow=rb(phase)*crack*uGlow*(sin(uTime*.3+crack*3.)*.15+.85);
-      glow+=rb(phase+.5)*smoothstep(0.,.12,vD)*crack*.25;
+      // ===== DEAD PLANET SURFACE =====
+      float terrain = fbm(P * 3.0);
+      float detail = fbm(P * 10.0 + 30.0);
+      float crater = 1.0 - smoothstep(0.35, 0.65, fbm(P * 8.0 + 50.0));
+      float ridge = abs(fbm(P * 5.0 + 70.0) - 0.5) * 2.0;
 
-      col=mix(col,glow,crack*.85);col+=glow*.5;
+      // Base dark dead-rock colors
+      vec3 darkRock = vec3(0.12, 0.10, 0.08);
+      vec3 midRock = vec3(0.22, 0.19, 0.15);
+      vec3 lightRock = vec3(0.30, 0.26, 0.21);
+      vec3 col = mix(darkRock, midRock, terrain);
+      col = mix(col, lightRock, ridge * 0.3);
+      col = mix(col, darkRock * 0.7, crater * 0.5);
+      col += (detail - 0.5) * 0.02;
 
-      vec3 L=normalize(vec3(2.,1.,3.));
-      float diff=max(dot(N,L),0.)*.5+.5;
-      col*=.3+diff*.7;
+      // Crack wall darkening (one side shadowed)
+      float wallShade = sin(P.x * 15.0 + P.y * 12.0 + P.z * 8.0) * 0.5 + 0.5;
+      col *= 1.0 - crack * 0.3 * (1.0 - wallShade);
 
-      float ws=sin(dot(P,vec3(1.,.5,.3))*30.+crack*5.)*.5+.5;
-      col-=crack*.12*(1.-ws);
+      // ===== RAINBOW GLOW INSIDE CRACKS =====
+      float crackDepth = smoothstep(0.0, 0.12, vD);
+      float crackWidth = smoothstep(0.0, 0.5, crack);
+      float crackCore = smoothstep(0.3, 0.8, crack);
 
-      float fr=pow(1.-max(dot(N,V),0.),3.);
-      col+=vec3(.12,.08,.2)*fr*.35;
-      col+=vec3(.25,.15,.4)*pow(1.-max(dot(N,V),0.),5.)*.06;
+      // Position-based hue with time cycling
+      float hue = dot(P, vec3(0.5, 0.3, 0.7)) * 0.3 + uTime * 0.04;
+      // Multiple hue layers for richness
+      float hue1 = hue;
+      float hue2 = hue + 0.33;
+      float hue3 = hue + 0.66;
 
-      gl_FragColor=vec4(col,1.);
+      // Bright rainbow colors
+      vec3 rainbow1 = hsl2rgb(hue1, 0.9, 0.55);
+      vec3 rainbow2 = hsl2rgb(hue2, 0.85, 0.50);
+      vec3 rainbow3 = hsl2rgb(hue3, 0.9, 0.60);
+
+      // Layered rainbow glow
+      vec3 glow = rainbow1 * crackCore * 0.8;
+      glow += rainbow2 * crackWidth * 0.4;
+      glow += rainbow3 * crackDepth * 0.3;
+
+      // Pulse animation
+      float pulse = sin(uTime * 0.5 + crack * 8.0) * 0.2 + 0.8;
+      glow *= pulse * uGlow;
+
+      // Inner bright core of cracks
+      float coreGlow = smoothstep(0.5, 1.0, crack) * smoothstep(0.0, 0.08, vD);
+      vec3 coreColor = hsl2rgb(hue + uTime * 0.06, 1.0, 0.7);
+      glow += coreColor * coreGlow * 0.6;
+
+      // ===== COMBINE =====
+      col = mix(col, glow, crack * 0.92);
+      col += glow * 0.4; // Additive glow for bloom
+
+      // ===== LIGHTING =====
+      vec3 L = normalize(vec3(2.0, 1.0, 3.0));
+      float diff = max(dot(N, L), 0.0) * 0.4 + 0.6;
+      col *= diff;
+
+      // Dim the surface but keep cracks bright (they glow regardless of light)
+      col = mix(col * 0.5, col, crack * 0.3);
+
+      // ===== EDGE ATMOSPHERE =====
+      float fresnel = pow(1.0 - max(dot(N, V), 0.0), 4.0);
+      col += vec3(0.08, 0.05, 0.12) * fresnel * 0.25;
+
+      // ===== CRACK SPECULAR SPARKLE =====
+      float sparkle = pow(max(dot(N, L), 0.0), 20.0) * crack * 0.15;
+      col += vec3(0.6, 0.4, 0.8) * sparkle;
+
+      gl_FragColor = vec4(col, 1.0);
     }
   `,
   side: THREE.DoubleSide,
