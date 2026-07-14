@@ -4,6 +4,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 gsap.registerPlugin(ScrollTrigger);
+console.log('[three-scene] Initializing cracked glass sphere scene...');
 
 const canvas = document.querySelector('#three-canvas');
 const scene = new THREE.Scene();
