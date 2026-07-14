@@ -93,3 +93,41 @@ window.addEventListener('scroll', () => {
   }
   lastScroll = currentScroll;
 }, { passive: true });
+
+// ======== Planet Destruction Sequence ========
+const planetStages = document.querySelectorAll('.planet-stage');
+const phaseNum = document.getElementById('phaseNum');
+const phaseBar = document.getElementById('phaseBar');
+const roman = ['I','II','III','IV','V'];
+
+if (planetStages.length > 0) {
+  ScrollTrigger.create({
+    trigger: '#planet-sequence',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.8,
+    onUpdate: ({ progress }) => {
+      const total = planetStages.length;
+      const idxFloat = progress * (total - 1);
+      const current = Math.min(Math.floor(idxFloat), total - 1);
+      const next = Math.min(current + 1, total - 1);
+      const t = idxFloat - current;
+
+      planetStages.forEach((s, i) => {
+        if (i === current) {
+          s.style.opacity = '1';
+          s.style.transform = 'scale(1)';
+        } else if (i === next) {
+          s.style.opacity = String(t);
+          s.style.transform = `scale(${1 - t * 0.06})`;
+        } else {
+          s.style.opacity = '0';
+          s.style.transform = 'scale(1.05)';
+        }
+      });
+
+      if (phaseNum) phaseNum.textContent = roman[Math.round(idxFloat)] || 'V';
+      if (phaseBar) phaseBar.style.width = `${progress * 100}%`;
+    },
+  });
+}

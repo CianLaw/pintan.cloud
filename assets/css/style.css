@@ -365,6 +365,82 @@ img {
   opacity: 0;
 }
 
+/* ======== Planet Destruction Sequence ======== */
+.planet-section {
+  height: 400vh;
+  position: relative;
+  z-index: 1;
+}
+.planet-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.planet-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(1.05);
+  transition: none;
+  will-change: opacity, transform;
+}
+.planet-stage img {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.planet-stage.active {
+  opacity: 1;
+  transform: scale(1);
+}
+.planet-progress {
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: var(--font-display);
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  z-index: 10;
+}
+.planet-counter {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  min-width: 80px;
+  text-align: right;
+}
+.planet-bar-track {
+  width: 120px;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 1px;
+}
+.planet-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: rgba(255,255,255,0.5);
+  border-radius: 1px;
+  transition: width 0.1s linear;
+}
+
 .hero {
   height: 100vh;
   display: flex;
